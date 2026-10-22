@@ -1,0 +1,399 @@
+{% extends 'hr/base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between mb-4 flex-wrap gap-3">
+    <div>
+        <p class="eyebrow">FICHE COLLABORATEUR</p>
+        <h1>{{ employee.first_name }} {{ employee.last_name }}</h1>
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary" onclick="window.print()">🖨️ Imprimer la fiche</button>
+        <a class="btn btn-primary" href="{% url 'employee_edit' employee.pk %}">Modifier</a>
+        <form class="d-inline" method="post" action="{% url 'employee_delete' employee.pk %}">
+            {% csrf_token %}
+            <button class="btn btn-outline-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet employé ?');">Supprimer</button>
+        </form>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Profil Résumé Sidebar -->
+    <div class="col-lg-3">
+        <section class="panel text-center py-4">
+            {% if employee.photo %}
+                <img class="profile-photo mb-3 mx-auto" src="{{ employee.photo.url }}" alt="Photo de {{ employee }}" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid #f3f4f6;">
+            {% else %}
+                <div class="avatar-placeholder mb-3 mx-auto" style="width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: white; display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: bold;">
+                    {{ employee.first_name|first }}{{ employee.last_name|first }}
+                </div>
+            {% endif %}
+            <h4 class="mb-1">{{ employee.first_name }} {{ employee.last_name }}</h4>
+            <p class="text-secondary mb-3">{{ employee.position }}</p>
+            <span class="badge bg-light text-secondary border px-3 py-2">{{ employee.employee_id }}</span>
+            <hr class="my-4">
+            <div class="text-start">
+                <div class="mb-3">
+                    <small class="text-secondary d-block">Département</small>
+                    <strong>{{ employee.department }}</strong>
+                </div>
+                <div class="mb-3">
+                    <small class="text-secondary d-block">Statut d'accès</small>
+                    <strong>{{ employee.get_access_status_display }}</strong>
+                </div>
+                <div class="mb-3">
+                    <small class="text-secondary d-block">Salaire RH</small>
+                    <strong>{{ employee.effective_salary_gross|floatformat:2 }} MAD brut / {{ employee.effective_salary_net|floatformat:2 }} MAD net</strong>
+                </div>
+                <div class="mb-3">
+                    <small class="text-secondary d-block">E-mail professionnel</small>
+                    <strong>{{ employee.email }}</strong>
+                </div>
+                <div class="mb-3">
+                    <small class="text-secondary d-block">Téléphone</small>
+                    <strong>{{ employee.phone|default:'Non renseigné' }}</strong>
+                </div>
+                <div class="mb-3">
+                    <small class="text-secondary d-block">Date d'embauche / inscription</small>
+                    <strong>{{ employee.hire_date|date:'d/m/Y' }}</strong>
+                </div>
+                <div>
+                    <small class="text-secondary d-block">Compétences</small>
+                    <strong style="color: var(--blue);">{{ employee.skills_profile.skills|default:"Non renseignées" }}</strong>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Détails & Historique (Tabs) -->
+    <div class="col-lg-9">
+        <div class="card border-0 shadow-sm" style="border-radius: 12px; overflow: hidden;">
+            {% if employee.access_status != 'APPROVED' %}
+            <div class="card-header bg-warning-subtle border-0 py-3">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div>
+                        <strong>Validation d'accès</strong><br>
+                        <small class="text-secondary">Décidez si cet employé peut accéder à la plateforme.</small>
+                    </div>
+                    <div class="d-flex gap-2">
+                        {% with missing_fields=employee.get_incomplete_onboarding_fields %}
+                        {% if missing_fields %}
+                        <div class="alert alert-warning mb-0 py-2 px-3" style="max-width: 420px;">
+                            Avant d’autoriser l’accès, complétez : {{ missing_fields|join:", " }}.
+                        </div>
+                        {% endif %}
+                        {% endwith %}
+                        <form method="post" action="{% url 'employee_access_decide' employee.pk 'APPROVED' %}">{% csrf_token %}<button class="btn btn-sm btn-success"{% if employee.get_incomplete_onboarding_fields %} disabled title="Complétez d’abord les informations RH obligatoires"{% endif %}>Autoriser</button></form>
+                        <form method="post" action="{% url 'employee_access_decide' employee.pk 'REJECTED' %}">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">Refuser</button></form>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            <div class="card-header bg-white border-0 pt-3">
+                <ul class="nav nav-tabs card-header-tabs" id="employeeTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="leaves-tab" data-bs-toggle="tab" data-bs-target="#leaves" type="button" role="tab" aria-controls="leaves" aria-selected="true">Congés & Absences</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="payslips-tab" data-bs-toggle="tab" data-bs-target="#payslips" type="button" role="tab" aria-controls="payslips" aria-selected="false">Salaires & Paie</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="documents-tab" data-bs-toggle="tab" data-bs-target="#documents" type="button" role="tab" aria-controls="documents" aria-selected="false">Documents & Contrats</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="schedules-tab" data-bs-toggle="tab" data-bs-target="#schedules" type="button" role="tab" aria-controls="schedules" aria-selected="false">Planning</button>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body p-4 bg-white">
+                <div class="tab-content" id="employeeTabContent">
+                    
+                    <!-- CONGES -->
+                    <div class="tab-pane fade show active" id="leaves" role="tabpanel" aria-labelledby="leaves-tab">
+                        <h5 class="mb-3">Historique des Congés et Absences</h5>
+                        <div class="table-responsive">
+                            <table class="table align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Période</th>
+                                        <th>Durée</th>
+                                        <th>Motif</th>
+                                        <th>Statut</th>
+                                        <th>Commentaire RH</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for l in leaves %}
+                                    <tr>
+                                        <td>Du {{ l.start_date|date:'d/m/Y' }} au {{ l.end_date|date:'d/m/Y' }}</td>
+                                        <td>{{ l.days }} jour(s)</td>
+                                        <td>{{ l.reason }}</td>
+                                        <td>
+                                            {% if l.status == 'APPROVED' %}
+                                                <span class="badge bg-success text-white px-2 py-1">Acceptée</span>
+                                            {% elif l.status == 'REJECTED' %}
+                                                <span class="badge bg-danger text-white px-2 py-1">Refusée</span>
+                                            {% else %}
+                                                <span class="badge bg-warning text-dark px-2 py-1">En attente</span>
+                                            {% endif %}
+                                        </td>
+                                        <td><small class="text-secondary">{{ l.decision_comment|default:'–' }}</small></td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center text-secondary py-4">Aucune demande de congé enregistrée.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- SALAIRES & PAIE -->
+                    <div class="tab-pane fade" id="payslips" role="tabpanel" aria-labelledby="payslips-tab">
+                        <h5 class="mb-3">Fiches de Paie et Rémunération</h5>
+                        <div class="table-responsive">
+                            <table class="table align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Période</th>
+                                        <th>Salaire Brut</th>
+                                        <th>Salaire Net</th>
+                                        <th>Document</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for p in payslips %}
+                                    <tr>
+                                        <td>{{ p.month|stringformat:"02d" }}/{{ p.year }}</td>
+                                        <td>{{ p.gross_salary }} DH</td>
+                                        <td><b>{{ p.net_salary }} DH</b></td>
+                                        <td>
+                                            {% if p.file %}
+                                                <a href="{{ p.file.url }}" class="btn btn-sm btn-outline-primary" download="fiche-paie-{{ p.month }}-{{ p.year }}.pdf">Télécharger</a>
+                                            {% else %}
+                                                <span class="text-secondary"><small>Non dispo.</small></span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center text-secondary py-4">Aucun bulletin de paie disponible.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- DOCUMENTS & CONTRATS -->
+                    <div class="tab-pane fade" id="documents" role="tabpanel" aria-labelledby="documents-tab">
+                        <!-- Section Contrats -->
+                        <h5 class="mb-3">Contrats de Travail</h5>
+                        <div class="table-responsive mb-4">
+                            <table class="table align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Début</th>
+                                        <th>Fin</th>
+                                        <th>Statut</th>
+                                        <th>Notes</th>
+                                        <th>Document</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for c in contracts %}
+                                    <tr>
+                                        <td><b>{{ c.get_contract_type_display }}</b></td>
+                                        <td>{{ c.start_date|date:'d/m/Y' }}</td>
+                                        <td>{{ c.end_date|date:'d/m/Y'|default:'Indéterminé' }}</td>
+                                        <td>
+                                            {% if c.status == 'ACTIVE' %}
+                                                <span class="badge bg-success text-white">Actif</span>
+                                            {% elif c.status == 'EXPIRED' %}
+                                                <span class="badge bg-warning text-dark">Expiré</span>
+                                            {% else %}
+                                                <span class="badge bg-danger text-white">Résilié</span>
+                                            {% endif %}
+                                        </td>
+                                        <td><small class="text-secondary">{{ c.notes|default:'–' }}</small></td>
+                                        <td>
+                                            {% if c.file %}
+                                                <a href="{{ c.file.url }}" class="btn btn-sm btn-outline-primary" download="contrat-{{ c.pk }}.pdf">Télécharger</a>
+                                            {% else %}
+                                                <span class="text-secondary"><small>Non chargé</small></span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="6" class="text-center text-secondary py-4">Aucun contrat enregistré.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Section Demandes de Documents -->
+                        <h5 class="mb-3 mt-4">Demandes de Documents Administratifs</h5>
+                        <div class="table-responsive">
+                            <table class="table align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Document</th>
+                                        <th>Date Demande</th>
+                                        <th>Précisions</th>
+                                        <th>Statut</th>
+                                        <th>Commentaire RH</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for d in documents %}
+                                    <tr>
+                                        <td><b>{{ d.get_doc_type_display }}</b></td>
+                                        <td>{{ d.created_at|date:'d/m/Y' }}</td>
+                                        <td><small>{{ d.details|default:'–' }}</small></td>
+                                        <td>
+                                            {% if d.status == 'READY' %}
+                                                <span class="badge bg-success text-white">Prêt</span>
+                                            {% elif d.status == 'DELIVERED' %}
+                                                <span class="badge bg-primary text-white">Remis</span>
+                                            {% elif d.status == 'REJECTED' %}
+                                                <span class="badge bg-danger text-white">Refusé</span>
+                                            {% else %}
+                                                <span class="badge bg-warning text-dark">En attente</span>
+                                            {% endif %}
+                                        </td>
+                                        <td><small class="text-secondary">{{ d.hr_comment|default:'–' }}</small></td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center text-secondary py-4">Aucune demande de document effectuée.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- PLANNING -->
+                    <div class="tab-pane fade" id="schedules" role="tabpanel" aria-labelledby="schedules-tab">
+                        <h5 class="mb-3">Planning de Travail & Shifts</h5>
+                        <div class="table-responsive">
+                            <table class="table align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Shift / Horaire</th>
+                                        <th>Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for s in schedules %}
+                                    <tr>
+                                        <td>{{ s.work_date|date:'d/m/Y' }}</td>
+                                        <td>
+                                            {% if s.shift == 'MORNING' %}
+                                                <span class="badge bg-info text-dark">Matin (06h–14h)</span>
+                                            {% elif s.shift == 'AFTERNOON' %}
+                                                <span class="badge bg-primary text-white">Après-midi (14h–22h)</span>
+                                            {% elif s.shift == 'NIGHT' %}
+                                                <span class="badge bg-dark text-white">Nuit (22h–06h)</span>
+                                            {% else %}
+                                                <span class="badge bg-light text-secondary">Repos</span>
+                                            {% endif %}
+                                        </td>
+                                        <td><small>{{ s.notes|default:'–' }}</small></td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="3" class="text-center text-secondary py-4">Aucun planning enregistré.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@media print {
+    /* Hide navigation bar, buttons, and tab headers */
+    nav, .navbar, .btn, form, ul.nav-tabs, .d-flex.justify-content-between, .card-header, #employeeTab {
+        display: none !important;
+    }
+    
+    /* Make layout full width */
+    body, main, .container {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+    }
+    .row {
+        display: block !important;
+    }
+    .col-lg-3, .col-lg-9 {
+        width: 100% !important;
+        max-width: 100% !important;
+        flex: 0 0 100% !important;
+        display: block !important;
+        margin-bottom: 2rem !important;
+    }
+    
+    /* Show all tab content panels together */
+    .tab-content > .tab-pane {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        margin-bottom: 3rem !important;
+        page-break-inside: avoid;
+    }
+    
+    /* Style headings */
+    .tab-pane h5 {
+        border-bottom: 2px solid #333 !important;
+        padding-bottom: 0.5rem !important;
+        margin-top: 2rem !important;
+        color: #000 !important;
+    }
+
+    /* Print panel style */
+    .panel, .card {
+        border: 1px solid #ccc !important;
+        box-shadow: none !important;
+        background: #fff !important;
+        padding: 1.5rem !important;
+        border-radius: 8px !important;
+    }
+    
+    /* Ensure table borders and layouts print correctly */
+    .table-responsive {
+        overflow: visible !important;
+    }
+    table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        page-break-inside: auto;
+    }
+    tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
+    }
+    th, td {
+        border: 1px solid #ddd !important;
+        padding: 8px !important;
+        font-size: 0.9rem !important;
+    }
+    th {
+        background-color: #f2f2f2 !important;
+        color: #000 !important;
+    }
+}
+</style>
+{% endblock %}

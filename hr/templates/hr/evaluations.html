@@ -1,0 +1,52 @@
+{% extends 'hr/base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-end mb-4">
+  <div>
+    <p class="eyebrow">ÉVALUATION</p>
+    <h1>Évaluations du personnel</h1>
+  </div>
+  <a class="btn btn-primary" href="{% url 'evaluation_add' %}">+ Nouvelle évaluation</a>
+</div>
+
+<section class="panel">
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>Employé</th>
+          <th>Période</th>
+          <th>Note</th>
+          <th>Points forts</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in evaluations %}
+        <tr>
+          <td><strong>{{ e.employee }}</strong></td>
+          <td>{{ e.period }}</td>
+          <td>
+            <span class="badge {% if e.score >= 15 %}status-approved{% elif e.score >= 10 %}status-pending{% else %}status-rejected{% endif %}">
+              {{ e.score }}/20
+            </span>
+          </td>
+          <td>{{ e.strengths|truncatechars:50|default:"—" }}</td>
+          <td>
+            <a class="btn btn-sm btn-outline-primary" href="{% url 'evaluation_detail' e.pk %}">Détails</a>
+            <a class="btn btn-sm btn-light" href="{% url 'evaluation_edit' e.pk %}">Modifier</a>
+            <form method="post" action="{% url 'evaluation_delete' e.pk %}" class="d-inline" onsubmit="return confirm('Voulez-vous vraiment supprimer cette évaluation ?');">
+              {% csrf_token %}
+              <button class="btn btn-sm btn-outline-danger">Supprimer</button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" class="text-center text-secondary py-4">Aucune évaluation enregistrée.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

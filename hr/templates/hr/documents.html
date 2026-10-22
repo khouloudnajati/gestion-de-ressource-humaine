@@ -1,0 +1,30 @@
+{% extends 'hr/base.html' %}
+{% block title %}Documents RH · PeopleFlow{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-5">
+    <section class="panel">
+      <p class="eyebrow">BASE DOCUMENTAIRE RAG</p>
+      <h1>Documents RH</h1>
+      <p class="text-secondary">Ces documents alimentent le moteur RAG du chatbot (recherche sémantique + IA).</p>
+      {% if rag.active %}
+      <div class="alert alert-success py-2 small">✅ RAG actif — {{ rag.chunks }} fragment(s) · {{ rag.model }}</div>
+      {% else %}
+      <div class="alert alert-warning py-2 small">⚠️ Index RAG vide. Ajoutez un document ou cliquez sur « Réindexer ».</div>
+      {% endif %}
+      <form method="post" enctype="multipart/form-data" class="mb-3">{% csrf_token %}{% for field in form %}<div class="mb-3">{{ field.label_tag }}{{ field }}</div>{% endfor %}<button class="btn btn-primary">Ajouter le document</button></form>
+      <form method="post" action="{% url 'rag_rebuild' %}">{% csrf_token %}<input type="hidden" name="next" value="{% url 'documents' %}"><button class="btn btn-outline-secondary btn-sm">🔄 Réindexer le corpus RAG</button></form>
+    </section>
+  </div>
+  <div class="col-lg-7">
+    <section class="panel">
+      <h4>Corpus disponible</h4>
+      <p class="text-secondary small">Dossier local : <code>documents_rh/</code> (règlement intérieur, procédures…)</p>
+      {% for d in documents %}
+      <div class="list-item"><div><b>{{ d.title }}</b><br><small>{{ d.uploaded_at|date:'d/m/Y H:i' }} · {% if d.active %}Actif{% else %}Inactif{% endif %}</small></div>
+      <form method="post" action="{% url 'document_delete' d.pk %}">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">Supprimer</button></form></div>
+      {% empty %}<p class="text-secondary">Aucun document importé. Le RAG utilise le règlement par défaut dans <code>documents_rh/</code>.</p>{% endfor %}
+    </section>
+  </div>
+</div>
+{% endblock %}

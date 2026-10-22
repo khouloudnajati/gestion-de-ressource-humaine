@@ -1,0 +1,12 @@
+{% extends 'hr/base.html' %}
+{% block content %}
+<div class="small-form">
+  <p class="eyebrow">ACCÈS EN ATTENTE</p>
+  <h1>Validation de votre accès</h1>
+  <p class="text-secondary">Votre demande est en cours de traitement par le service RH. Vous recevrez une notification dès que votre accès sera autorisé ou refusé.</p>
+  <div class="panel p-4 mt-3">
+    <strong>{{ employee }}</strong><br>
+    <small class="text-secondary">Statut actuel : En attente</small>
+  </div>
+</div>
+{% endblock %}

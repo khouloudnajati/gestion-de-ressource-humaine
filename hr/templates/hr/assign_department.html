@@ -1,0 +1,24 @@
+{% extends 'hr/base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <p class="eyebrow">ORGANISATION</p>
+    <h1>Affecter un employé à {{ department.name }}</h1>
+  </div>
+  <a class="btn btn-outline-secondary" href="{% url 'departments' %}">Retour</a>
+</div>
+
+<form method="post" class="panel">
+  {% csrf_token %}
+  <label class="form-label" for="employee_id">Sélectionner un employé existant</label>
+  <select name="employee_id" id="employee_id" class="form-select">
+    <option value="">-- Choisir un employé --</option>
+    {% for employee in employees %}
+      <option value="{{ employee.pk }}">{{ employee.first_name }} {{ employee.last_name }} · {{ employee.position }}</option>
+    {% empty %}
+      <option value="" disabled>Aucun employé disponible</option>
+    {% endfor %}
+  </select>
+  <button class="btn btn-primary mt-3" type="submit">Affecter</button>
+</form>
+{% endblock %}

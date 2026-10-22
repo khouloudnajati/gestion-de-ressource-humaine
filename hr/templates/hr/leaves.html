@@ -1,0 +1,146 @@
+{% extends 'hr/base.html' %}
+{% block title %}Gestion des congés · PeopleFlow{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-end mb-4">
+  <div>
+    <p class="eyebrow">ABSENCES</p>
+    <h1>{% if can_manage %}Gestion des congés{% else %}Mes congés{% endif %}</h1>
+    <p class="text-secondary mb-0">{% if can_manage %}Validez, refusez et suivez toutes les demandes d'absence.{% else %}Déposez et suivez vos demandes — vous serez notifié(e) de chaque décision.{% endif %}</p>
+  </div>
+  {% if employee %}<a class="btn btn-primary" href="{% url 'leave_create' %}">+ Nouvelle demande</a>{% endif %}
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3"><div class="metric amber"><span>En attente</span><strong>{{ stats.pending }}</strong></div></div>
+  <div class="col-6 col-md-3"><div class="metric green"><span>Acceptées</span><strong>{{ stats.approved }}</strong></div></div>
+  <div class="col-6 col-md-3"><div class="metric"><span>Refusées</span><strong>{{ stats.rejected }}</strong></div></div>
+  <div class="col-6 col-md-3"><div class="metric"><span>Annulées</span><strong>{{ stats.cancelled }}</strong></div></div>
+</div>
+
+{% if can_manage %}
+<section class="panel mb-4">
+  <form method="get" class="row g-2 align-items-end">
+    <div class="col-md-3">
+      <label class="form-label small">Employé</label>
+      <select name="employee" class="form-select form-select-sm">
+        <option value="">Tous</option>
+        {% for emp in all_employees %}
+        <option value="{{ emp.pk }}" {% if current_employee == emp.pk|stringformat:"s" %}selected{% endif %}>{{ emp }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <label class="form-label small">Statut</label>
+      <select name="status" class="form-select form-select-sm">
+        <option value="">Tous</option>
+        {% for val, label in status_choices %}
+        <option value="{{ val }}" {% if current_status == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <label class="form-label small">Type de congé</label>
+      <select name="leave_type" class="form-select form-select-sm">
+        <option value="">Tous</option>
+        {% for val, label in leave_types %}
+        <option value="{{ val }}" {% if current_leave_type == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <label class="form-label small">Date début</label>
+      <input type="date" name="start_date" class="form-control form-control-sm" value="{{ request.GET.start_date|default:'' }}">
+    </div>
+    <div class="col-md-2">
+      <label class="form-label small">Date fin</label>
+      <input type="date" name="end_date" class="form-control form-control-sm" value="{{ request.GET.end_date|default:'' }}">
+    </div>
+    <div class="col-md-1 d-flex gap-2">
+      <button class="btn btn-sm btn-primary">Filtrer</button>
+      <a href="{% url 'leaves' %}" class="btn btn-sm btn-outline-secondary" title="Réinitialiser">↻</a>
+    </div>
+  </form>
+</section>
+{% endif %}
+
+<section class="panel">
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>Employé</th>
+          <th>Type</th>
+          <th>Période</th>
+          <th>Durée</th>
+          <th>Motif</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for leave in leaves %}
+        <tr>
+          <td>{{ leave.employee }}</td>
+          <td><span class="badge bg-light text-dark">{{ leave.get_leave_type_display }}</span></td>
+          <td>{{ leave.start_date|date:'d/m/Y' }}<br><small class="text-secondary">au {{ leave.end_date|date:'d/m/Y' }}</small></td>
+          <td>{{ leave.days }} jour(s)</td>
+          <td><small>{{ leave.reason|truncatechars:60 }}</small>{% if leave.decision_comment %}<br><small class="text-secondary">RH : {{ leave.decision_comment|truncatechars:40 }}</small>{% endif %}</td>
+          <td><span class="badge status-{{ leave.status|lower }}">{{ leave.get_status_display }}</span></td>
+          <td>
+            {% if can_manage and leave.status == 'PENDING' %}
+            <div class="d-flex gap-1 flex-wrap">
+              <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#approve-{{ leave.pk }}">✓ Accepter</button>
+              <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#reject-{{ leave.pk }}">✗ Refuser</button>
+            </div>
+            <div class="modal fade" id="approve-{{ leave.pk }}" tabindex="-1">
+              <div class="modal-dialog"><div class="modal-content">
+                <form method="post" action="{% url 'leave_decide' leave.pk 'APPROVED' %}">
+                  {% csrf_token %}
+                  <div class="modal-header"><h5 class="modal-title">Accepter le congé</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                  <div class="modal-body">
+                    <p><b>{{ leave.employee }}</b> — {{ leave.get_leave_type_display }}<br>{{ leave.start_date|date:'d/m/Y' }} au {{ leave.end_date|date:'d/m/Y' }} ({{ leave.days }} jour(s))</p>
+                    <label class="form-label">Commentaire (optionnel)</label>
+                    <textarea name="comment" class="form-control" rows="2" placeholder="Message pour l'employé…"></textarea>
+                    <small class="text-secondary">L'employé recevra une notification in-app et par e-mail.</small>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button class="btn btn-success">Confirmer l'acceptation</button>
+                  </div>
+                </form>
+              </div></div>
+            </div>
+            <div class="modal fade" id="reject-{{ leave.pk }}" tabindex="-1">
+              <div class="modal-dialog"><div class="modal-content">
+                <form method="post" action="{% url 'leave_decide' leave.pk 'REJECTED' %}">
+                  {% csrf_token %}
+                  <div class="modal-header"><h5 class="modal-title">Refuser le congé</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                  <div class="modal-body">
+                    <p><b>{{ leave.employee }}</b> — {{ leave.get_leave_type_display }}<br>{{ leave.start_date|date:'d/m/Y' }} au {{ leave.end_date|date:'d/m/Y' }}</p>
+                    <label class="form-label">Motif du refus</label>
+                    <textarea name="comment" class="form-control" rows="2" placeholder="Expliquez le refus à l'employé…"></textarea>
+                    <small class="text-secondary">L'employé sera notifié du refus avec ce commentaire.</small>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button class="btn btn-danger">Confirmer le refus</button>
+                  </div>
+                </form>
+              </div></div>
+            </div>
+            {% elif not can_manage and leave.status == 'PENDING' %}
+            <form method="post" action="{% url 'leave_cancel' leave.pk %}" onsubmit="return confirm('Annuler cette demande ?')">
+              {% csrf_token %}
+              <button class="btn btn-sm btn-outline-secondary">Annuler</button>
+            </form>
+            {% else %}<span class="text-secondary">—</span>{% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="text-center text-secondary py-4">Aucune demande de congé.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

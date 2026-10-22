@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bienvenue</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: #f3f4f6;
+      color: #1f2937;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrapper {
+      width: 100%;
+      background-color: #f3f4f6;
+      padding: 40px 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    .header {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      padding: 40px 20px;
+      text-align: center;
+    }
+    .header h1 {
+      color: #ffffff;
+      margin: 0;
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+    }
+    .content {
+      padding: 40px 30px;
+      line-height: 1.6;
+    }
+    .content h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #111827;
+      margin-top: 0;
+      margin-bottom: 20px;
+    }
+    .content p {
+      margin-bottom: 24px;
+      font-size: 16px;
+      color: #4b5563;
+    }
+    .cta-container {
+      text-align: center;
+      margin: 32px 0;
+    }
+    .btn {
+      display: inline-block;
+      background-color: #4f46e5;
+      color: #ffffff !important;
+      text-decoration: none;
+      padding: 14px 30px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(79, 70, 229, 0.2);
+      transition: background-color 0.2s ease;
+    }
+    .footer {
+      background-color: #f9fafb;
+      padding: 24px 30px;
+      text-align: center;
+      border-top: 1px solid #f3f4f6;
+      font-size: 14px;
+      color: #9ca3af;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="container">
+      <div class="header">
+        <h1>Plateforme de Ziz</h1>
+      </div>
+      <div class="content">
+        <h2>Bonjour {{ first_name }},</h2>
+        <p>Nous sommes ravis de vous accueillir ! Votre inscription sur <strong>notre plateforme de ziz</strong> a été complétée avec succès.</p>
+        <p>Vous pouvez dès à présent vous connecter pour accéder à tous nos outils et services.</p>
+        <div class="cta-container">
+          <a href="{{ login_url|default:'http://127.0.0.1:8000/connexion/' }}" class="btn">Se connecter à mon espace</a>
+        </div>
+        <p>Si vous avez des questions ou rencontrez des difficultés, n'hésitez pas à répondre à cet e-mail.</p>
+        <p>À bientôt,<br>L'équipe de la plateforme.</p>
+      </div>
+      <div class="footer">
+        © 2026 Plateforme de Ziz. Tous droits réservés.
+      </div>
+    </div>
+  </div>
+</body>
+</html>

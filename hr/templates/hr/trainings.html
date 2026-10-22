@@ -1,0 +1,64 @@
+{% extends 'hr/base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-end mb-4">
+  <div>
+    <p class="eyebrow">FORMATION</p>
+    <h1>{% if can_manage %}Gestion des formations{% else %}Formations{% endif %}</h1>
+  </div>
+  {% if can_manage %}
+    <a class="btn btn-primary" href="{% url 'training_add' %}">+ Nouvelle formation</a>
+  {% endif %}
+</div>
+
+<section class="panel">
+  {% for t in trainings %}
+  <div class="list-item flex-column align-items-start py-3">
+    <div class="w-100 d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div>
+        <strong>{{ t.title }}</strong>
+        {% if t.department %} · <span class="badge bg-secondary">{{ t.department }}</span>{% endif %}
+        <br>
+        <small class="text-secondary">
+          {{ t.start_date|date:'d/m/Y' }} — {{ t.end_date|date:'d/m/Y' }} · 
+          <strong>{{ t.enrollments.count }}/{{ t.max_participants }}</strong> inscrit(s) · 
+          Formateur: {{ t.trainer|default:"Non spécifié" }}
+        </small>
+        <p class="text-secondary mb-0 mt-1" style="font-size: 0.95rem;">{{ t.description }}</p>
+      </div>
+      
+      <div class="d-flex align-items-center gap-2">
+        {% if employee %}
+          {% if t.pk not in enrolled_ids %}
+            {% if t.enrollments.count < t.max_participants %}
+              <form method="post" action="{% url 'training_enroll' t.pk %}" class="d-inline">
+                {% csrf_token %}
+                <button class="btn btn-sm btn-primary">S'inscrire</button>
+              </form>
+            {% else %}
+              <span class="badge bg-secondary">Complet</span>
+            {% endif %}
+          {% else %}
+            <span class="badge status-approved me-2">Inscrit</span>
+            <form method="post" action="{% url 'training_cancel_enroll' t.pk %}" class="d-inline">
+              {% csrf_token %}
+              <button class="btn btn-sm btn-outline-danger">Se désinscrire</button>
+            </form>
+          {% endif %}
+        {% endif %}
+        
+        {% if can_manage %}
+          <a class="btn btn-sm btn-outline-primary" href="{% url 'training_detail' t.pk %}">Participants</a>
+          <a class="btn btn-sm btn-light" href="{% url 'training_edit' t.pk %}">Modifier</a>
+          <form method="post" action="{% url 'training_delete' t.pk %}" class="d-inline" onsubmit="return confirm('Voulez-vous vraiment supprimer cette formation ?');">
+            {% csrf_token %}
+            <button class="btn btn-sm btn-outline-danger">Supprimer</button>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% empty %}
+    <p class="text-secondary mb-0 py-3 text-center">Aucune formation programmée.</p>
+  {% endfor %}
+</section>
+{% endblock %}

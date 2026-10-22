@@ -1,0 +1,89 @@
+{% extends 'hr/base.html' %}
+{% block title %}{{ candidature.candidat }} · Candidature{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-2">
+  <div>
+    <p class="eyebrow">CANDIDATURE SPONTANÉE</p>
+    <h1>{{ candidature.prenom }} {{ candidature.nom }}</h1>
+    <p class="text-secondary mb-0">Reçue le {{ candidature.date_candidature|date:'d/m/Y à H:i' }} · {{ candidature.filiere }}</p>
+  </div>
+  <div class="d-flex gap-2 flex-wrap">
+    <a class="btn btn-light" href="{% url 'candidatures_rh' %}">Retour à la liste</a>
+    <a class="btn btn-outline-primary" href="{% url 'candidature_cv' candidature.pk %}">Ouvrir le CV</a>
+    <a class="btn btn-primary" href="{% url 'candidature_cv' candidature.pk %}?download=1">Télécharger le CV</a>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-8">
+    <section class="panel mb-4">
+      <h4 class="mb-3">Informations du candidat</h4>
+      <div class="row g-3">
+        <div class="col-md-6"><small class="text-secondary d-block">Nom</small><strong>{{ candidature.nom }}</strong></div>
+        <div class="col-md-6"><small class="text-secondary d-block">Prénom</small><strong>{{ candidature.prenom }}</strong></div>
+        <div class="col-md-6"><small class="text-secondary d-block">E-mail</small><strong>{{ candidature.email }}</strong></div>
+        <div class="col-md-6"><small class="text-secondary d-block">Téléphone</small><strong>{{ candidature.telephone }}</strong></div>
+        <div class="col-md-6"><small class="text-secondary d-block">Ville</small><strong>{{ candidature.ville }}</strong></div>
+        <div class="col-md-6"><small class="text-secondary d-block">Filière</small><strong>{{ candidature.filiere }}</strong></div>
+        <div class="col-md-6"><small class="text-secondary d-block">Niveau d'études</small><strong>{{ candidature.get_niveau_etudes_display }}</strong></div>
+        <div class="col-md-6"><small class="text-secondary d-block">Années d'expérience</small><strong>{{ candidature.experience }}</strong></div>
+        <div class="col-md-6"><small class="text-secondary d-block">Type de candidature</small><strong>{{ candidature.get_type_candidature_display }}</strong></div>
+        <div class="col-md-6"><small class="text-secondary d-block">Statut</small>
+          {% if candidature.statut == 'NOUVELLE' %}
+          <span class="badge status-pending">{{ candidature.get_statut_display }}</span>
+          {% elif candidature.statut == 'RETENUE' %}
+          <span class="badge status-approved">{{ candidature.get_statut_display }}</span>
+          {% elif candidature.statut == 'NON_RETENUE' %}
+          <span class="badge status-rejected">{{ candidature.get_statut_display }}</span>
+          {% elif candidature.statut == 'ARCHIVEE' %}
+          <span class="badge status-cancelled">{{ candidature.get_statut_display }}</span>
+          {% else %}
+          <span class="badge status-ready">{{ candidature.get_statut_display }}</span>
+          {% endif %}
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h4 class="mb-3">Message / lettre de motivation</h4>
+      {% if candidature.message %}
+      <p class="mb-0" style="white-space: pre-wrap;">{{ candidature.message }}</p>
+      {% else %}
+      <p class="text-secondary mb-0">Aucun message n'a été joint à cette candidature.</p>
+      {% endif %}
+    </section>
+  </div>
+
+  <div class="col-lg-4">
+    <section class="panel mb-4">
+      <h4 class="mb-3">Modifier le statut</h4>
+      <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label" for="{{ form.statut.id_for_label }}">Statut</label>
+          {{ form.statut }}
+          {% for error in form.statut.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Enregistrer le statut</button>
+      </form>
+      {% if candidature.traite_par %}
+      <p class="text-secondary mt-3 mb-0">
+        <small>Traité par {{ candidature.traite_par.get_full_name|default:candidature.traite_par.username }}
+        {% if candidature.date_traitement %}le {{ candidature.date_traitement|date:'d/m/Y à H:i' }}{% endif %}.</small>
+      </p>
+      {% endif %}
+    </section>
+
+    {% if candidature.statut != 'ARCHIVEE' %}
+    <section class="panel">
+      <h4 class="mb-3">Archivage</h4>
+      <p class="text-secondary">L'archivage retire la candidature du suivi actif sans la supprimer.</p>
+      <form method="post" action="{% url 'candidature_rh_archive' candidature.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline-secondary w-100" onclick="return confirm('Archiver cette candidature ?');">Archiver la candidature</button>
+      </form>
+    </section>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

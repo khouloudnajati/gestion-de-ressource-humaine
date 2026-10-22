@@ -1,0 +1,97 @@
+{% extends 'hr/base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-end mb-4">
+  <div>
+    <p class="eyebrow">PAIE</p>
+    <h1>{% if can_manage %}Fiches de paie{% else %}Mes fiches de paie{% endif %}</h1>
+  </div>
+  {% if can_manage %}
+    <a class="btn btn-primary" href="{% url 'payslip_add' %}">+ Publier une fiche</a>
+  {% endif %}
+</div>
+
+<section class="panel mb-4 py-3">
+  <form method="get" class="row g-2 align-items-end">
+    {% if can_manage %}
+    <div class="col-md-3">
+      <label class="form-label small text-secondary">Filtrer par employé</label>
+      <select name="employee" class="form-select form-select-sm">
+        <option value="">Tous les employés</option>
+        {% for emp in all_employees %}
+          <option value="{{ emp.id }}" {% if current_employee == emp.id|stringformat:"i" %}selected{% endif %}>{{ emp }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    {% endif %}
+    <div class="col-md-3">
+      <label class="form-label small text-secondary">Mois</label>
+      <select name="month" class="form-select form-select-sm">
+        <option value="">Tous les mois</option>
+        {% for m in months %}
+          <option value="{{ m }}" {% if current_month == m|stringformat:"i" %}selected{% endif %}>{{ m|stringformat:"02d" }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label small text-secondary">Année</label>
+      <select name="year" class="form-select form-select-sm">
+        <option value="">Toutes les années</option>
+        {% for y in years %}
+          <option value="{{ y }}" {% if current_year == y|stringformat:"i" %}selected{% endif %}>{{ y }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3 d-flex gap-2">
+      <button type="submit" class="btn btn-sm btn-primary w-100">Filtrer</button>
+      <a href="{% url 'payslips' %}" class="btn btn-sm btn-outline-secondary w-100">Réinitialiser</a>
+    </div>
+  </form>
+</section>
+
+<section class="panel">
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          {% if can_manage %}<th>Employé</th>{% endif %}
+          <th>Période</th>
+          <th>Salaire brut</th>
+          <th>Salaire net</th>
+          <th>Document</th>
+          {% if can_manage %}<th>Actions</th>{% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in payslips %}
+        <tr>
+          {% if can_manage %}<td><strong>{{ p.employee }}</strong></td>{% endif %}
+          <td>{{ p.month|stringformat:'02d' }}/{{ p.year }}</td>
+          <td>{{ p.gross_salary }} MAD</td>
+          <td><strong class="text-success">{{ p.net_salary }} MAD</strong></td>
+          <td>
+            {% if p.file %}
+              <a href="{{ p.file.url }}" class="btn btn-sm btn-outline-primary" target="_blank" rel="noopener noreferrer" download="fiche-paie-{{ p.employee.pk }}-{{ p.month }}-{{ p.year }}.pdf">Télécharger</a>
+            {% else %}
+              <span class="text-secondary">—</span>
+            {% endif %}
+          </td>
+          {% if can_manage %}
+          <td>
+            <a class="btn btn-sm btn-light" href="{% url 'payslip_edit' p.pk %}">Modifier</a>
+            <form method="post" action="{% url 'payslip_delete' p.pk %}" class="d-inline" onsubmit="return confirm('Voulez-vous vraiment supprimer cette fiche de paie ?');">
+              {% csrf_token %}
+              <button class="btn btn-sm btn-outline-danger">Supprimer</button>
+            </form>
+          </td>
+          {% endif %}
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center text-secondary py-4">Aucune fiche de paie trouvée.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

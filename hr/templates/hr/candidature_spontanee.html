@@ -1,0 +1,112 @@
+{% extends 'hr/base.html' %}
+{% block title %}Candidature spontanée · SmartZIZ{% endblock %}
+{% block content %}
+<style>
+  .candidature-page { max-width: 820px; margin: 0 auto; }
+  .candidature-hero {
+    background: #ffffff;
+    border-radius: 28px;
+    padding: 28px 32px;
+    box-shadow: 0 10px 30px rgba(0, 30, 60, 0.06);
+    margin-bottom: 22px;
+  }
+  .candidature-hero p { color: #536b83; line-height: 1.7; margin-bottom: 0; }
+  .required-star { color: #dc3545; }
+</style>
+
+<div class="candidature-page">
+  <div class="candidature-hero">
+    <p class="eyebrow mb-2">COOPÉRATIVE LAITIÈRE ZIZ</p>
+    <h1>Candidature spontanée</h1>
+    <p>
+      Vous souhaitez rejoindre la Coopérative ZIZ ? Envoyez-nous votre candidature spontanée.
+      Notre équipe RH étudiera votre profil et vous contactera si une opportunité correspondant
+      à votre parcours se présente.
+    </p>
+  </div>
+
+  <section class="panel">
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+      <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+      {% endif %}
+
+      <h5 class="mb-3">Informations personnelles</h5>
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <label class="form-label" for="{{ form.nom.id_for_label }}">{{ form.nom.label }} <span class="required-star">*</span></label>
+          {{ form.nom }}
+          {% for error in form.nom.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="{{ form.prenom.id_for_label }}">{{ form.prenom.label }} <span class="required-star">*</span></label>
+          {{ form.prenom }}
+          {% for error in form.prenom.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="{{ form.email.id_for_label }}">{{ form.email.label }} <span class="required-star">*</span></label>
+          {{ form.email }}
+          {% for error in form.email.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="{{ form.telephone.id_for_label }}">{{ form.telephone.label }} <span class="required-star">*</span></label>
+          {{ form.telephone }}
+          {% for error in form.telephone.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="{{ form.ville.id_for_label }}">{{ form.ville.label }} <span class="required-star">*</span></label>
+          {{ form.ville }}
+          {% for error in form.ville.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
+        </div>
+      </div>
+
+      <h5 class="mb-3">Informations professionnelles</h5>
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <label class="form-label" for="{{ form.filiere.id_for_label }}">{{ form.filiere.label }} <span class="required-star">*</span></label>
+          {{ form.filiere }}
+          {% for error in form.filiere.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="{{ form.niveau_etudes.id_for_label }}">{{ form.niveau_etudes.label }} <span class="required-star">*</span></label>
+          {{ form.niveau_etudes }}
+          {% for error in form.niveau_etudes.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="{{ form.experience.id_for_label }}">{{ form.experience.label }} <span class="required-star">*</span></label>
+          {{ form.experience }}
+          {% if form.experience.help_text %}<small class="text-secondary d-block">{{ form.experience.help_text }}</small>{% endif %}
+          {% for error in form.experience.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="{{ form.type_candidature.id_for_label }}">{{ form.type_candidature.label }} <span class="required-star">*</span></label>
+          {{ form.type_candidature }}
+          {% for error in form.type_candidature.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
+        </div>
+      </div>
+
+      <h5 class="mb-3">CV</h5>
+      <div class="mb-4">
+        <label class="form-label" for="{{ form.cv.id_for_label }}">{{ form.cv.label }} <span class="required-star">*</span></label>
+        {{ form.cv }}
+        {% if form.cv.help_text %}<small class="text-secondary d-block">{{ form.cv.help_text }}</small>{% endif %}
+        {% for error in form.cv.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
+      </div>
+
+      <h5 class="mb-3">Message</h5>
+      <div class="mb-4">
+        <label class="form-label" for="{{ form.message.id_for_label }}">{{ form.message.label }}</label>
+        {{ form.message }}
+        {% if form.message.help_text %}<small class="text-secondary d-block">{{ form.message.help_text }}</small>{% endif %}
+        {% for error in form.message.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
+      </div>
+
+      <div class="d-flex flex-wrap gap-2">
+        <button type="submit" class="btn btn-primary">Envoyer ma candidature</button>
+        <a class="btn btn-light" href="{% url 'login' %}">Retour à la connexion</a>
+      </div>
+    </form>
+  </section>
+</div>
+{% endblock %}

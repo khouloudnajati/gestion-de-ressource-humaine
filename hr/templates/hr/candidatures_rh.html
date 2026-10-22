@@ -1,0 +1,127 @@
+{% extends 'hr/base.html' %}
+{% block title %}Candidatures spontanées · SmartZIZ{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-2">
+  <div>
+    <p class="eyebrow">RECRUTEMENT</p>
+    <h1>Candidatures spontanées</h1>
+    <p class="text-secondary mb-0">Consultez, filtrez et classez les candidatures reçues selon la filière.</p>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-4 col-xl-2"><div class="metric"><span>Total</span><strong>{{ candidatures_total }}</strong></div></div>
+  <div class="col-6 col-md-4 col-xl-2"><div class="metric amber"><span>Nouvelles</span><strong>{{ candidatures_nouvelles }}</strong></div></div>
+  <div class="col-6 col-md-4 col-xl-2"><div class="metric"><span>En cours d'étude</span><strong>{{ candidatures_en_cours }}</strong></div></div>
+  <div class="col-6 col-md-4 col-xl-2"><div class="metric green"><span>Retenues</span><strong>{{ candidatures_retenues }}</strong></div></div>
+  <div class="col-6 col-md-4 col-xl-2"><div class="metric"><span>Non retenues</span><strong>{{ candidatures_non_retenues }}</strong></div></div>
+</div>
+
+{% if candidatures_par_filiere %}
+<section class="panel mb-4">
+  <h4 class="mb-3">Classement par filière</h4>
+  <div class="row g-2">
+    <div class="col-6 col-md-4 col-lg-3">
+      <a class="text-decoration-none" href="{% url 'candidatures_rh' %}">
+        <div class="metric"><span>Toutes</span><strong>{{ candidatures_total }}</strong></div>
+      </a>
+    </div>
+    {% for f in candidatures_par_filiere %}
+    <div class="col-6 col-md-4 col-lg-3">
+      <a class="text-decoration-none" href="{% url 'candidatures_rh' %}?filiere={{ f.pk }}">
+        <div class="metric {% if filiere_id == f.pk|stringformat:'s' %}border border-primary{% endif %}"><span>{{ f.name }}</span><strong>{{ f.nb }}</strong></div>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<section class="panel">
+  <form class="row g-2 mb-3" method="get">
+    <div class="col-md-4">
+      <input name="q" class="form-control" value="{{ q }}" placeholder="Rechercher par nom, prénom ou e-mail…">
+    </div>
+    <div class="col-md-3">
+      <select name="filiere" class="form-select">
+        <option value="">Filière : Toutes</option>
+        {% for f in filieres %}
+        <option value="{{ f.pk }}" {% if filiere_id == f.pk|stringformat:'s' %}selected{% endif %}>{{ f.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <select name="statut" class="form-select">
+        <option value="">Statut : Tous</option>
+        {% for value, label in statuts %}
+        <option value="{{ value }}" {% if statut == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <select name="tri" class="form-select">
+        <option value="desc" {% if tri != 'asc' %}selected{% endif %}>Date : plus récentes</option>
+        <option value="asc" {% if tri == 'asc' %}selected{% endif %}>Date : plus anciennes</option>
+      </select>
+    </div>
+    <div class="col-md-1">
+      <button type="submit" class="btn btn-secondary w-100">Filtrer</button>
+    </div>
+  </form>
+
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>Candidat</th>
+          <th>Email</th>
+          <th>Téléphone</th>
+          <th>Filière</th>
+          <th>Expérience</th>
+          <th>Date</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in candidatures %}
+        <tr>
+          <td><strong>{{ c.prenom }} {{ c.nom }}</strong></td>
+          <td>{{ c.email }}</td>
+          <td>{{ c.telephone }}</td>
+          <td>{{ c.filiere }}</td>
+          <td>{{ c.experience }} an{{ c.experience|pluralize }}</td>
+          <td>{{ c.date_candidature|date:'d/m/Y' }}</td>
+          <td>
+            {% if c.statut == 'NOUVELLE' %}
+            <span class="badge status-pending">{{ c.get_statut_display }}</span>
+            {% elif c.statut == 'RETENUE' %}
+            <span class="badge status-approved">{{ c.get_statut_display }}</span>
+            {% elif c.statut == 'NON_RETENUE' %}
+            <span class="badge status-rejected">{{ c.get_statut_display }}</span>
+            {% elif c.statut == 'ARCHIVEE' %}
+            <span class="badge status-cancelled">{{ c.get_statut_display }}</span>
+            {% else %}
+            <span class="badge status-ready">{{ c.get_statut_display }}</span>
+            {% endif %}
+          </td>
+          <td class="text-nowrap">
+            <a class="btn btn-sm btn-outline-primary" href="{% url 'candidature_rh_detail' c.pk %}">Consulter</a>
+            <a class="btn btn-sm btn-light" href="{% url 'candidature_cv' c.pk %}">CV</a>
+            {% if c.statut != 'ARCHIVEE' %}
+            <form method="post" action="{% url 'candidature_rh_archive' c.pk %}" class="d-inline">{% csrf_token %}
+              <button class="btn btn-sm btn-outline-secondary" type="submit" onclick="return confirm('Archiver cette candidature ?');">Archiver</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="8" class="text-center text-secondary py-4">Aucune candidature ne correspond à ces critères.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

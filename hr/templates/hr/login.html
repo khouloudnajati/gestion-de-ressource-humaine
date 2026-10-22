@@ -1,0 +1,778 @@
+{% extends 'hr/base.html' %}
+
+{% block content %}
+
+<style>
+    /* ================================
+       PAGE LOGIN SMARTZIZ
+    ================================= */
+
+    .smartziz-page {
+        min-height: 100vh;
+        background: #f3f6fb;
+        padding: 30px 20px 60px;
+    }
+
+    .smartziz-container {
+        max-width: 1100px;
+        margin: auto;
+    }
+
+    /* ================================
+       COOPERATIVE HEADER
+    ================================= */
+
+    .coop-header {
+        background: #ffffff;
+        border-radius: 30px;
+        padding: 25px 20px;
+        text-align: center;
+        margin-bottom: 25px;
+        box-shadow: 0 10px 30px rgba(0, 30, 60, 0.06);
+    }
+
+    .coop-badge {
+        display: inline-block;
+        background: #eef4fa;
+        color: #1a3d62;
+        padding: 7px 25px;
+        border-radius: 50px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+    }
+
+    .coop-title {
+        margin: 0;
+        font-size: 32px;
+        font-weight: 750;
+        color: #0b1e33;
+    }
+
+    .coop-subtitle {
+        margin-top: 8px;
+        margin-bottom: 0;
+        color: #60758d;
+        font-size: 15px;
+    }
+
+    /* ================================
+       LOGIN SECTION
+    ================================= */
+
+    .login-smart-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        background: white;
+        border-radius: 35px;
+        overflow: hidden;
+        box-shadow: 0 12px 35px rgba(0, 30, 60, 0.07);
+        margin-bottom: 25px;
+    }
+
+    /* Partie gauche */
+
+    .smartziz-presentation {
+        padding: 50px 45px;
+        background: #f9fbfe;
+    }
+
+    .smartziz-eyebrow {
+        color: #52708f;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+    }
+
+    .smartziz-title {
+        font-size: 38px;
+        font-weight: 750;
+        line-height: 1.15;
+        color: #0b1e33;
+        margin-bottom: 18px;
+    }
+
+    .smartziz-title span {
+        background: linear-gradient(
+            135deg,
+            #0d6efd,
+            #3b82f6,
+            #06b6d4
+        );
+
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .smartziz-description {
+        color: #536b83;
+        font-size: 15px;
+        line-height: 1.7;
+        margin-bottom: 25px;
+    }
+
+    /* Features */
+
+    .smart-feature {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 15px;
+        color: #1c3a5e;
+        font-size: 14px;
+    }
+
+    .feature-icon {
+        width: 34px;
+        height: 34px;
+        min-width: 34px;
+        border-radius: 50%;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        background: linear-gradient(
+            135deg,
+            #e8f3ff,
+            #d8ecff
+        );
+
+        color: #0d6efd;
+        font-weight: 700;
+    }
+
+    /* ================================
+       FORMULAIRE
+    ================================= */
+
+    .login-area {
+        padding: 50px 45px;
+        background: #ffffff;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .login-form {
+        width: 100%;
+    }
+
+    .login-form h2 {
+        color: #0b1e33;
+        font-size: 28px;
+        font-weight: 750;
+        margin-bottom: 7px;
+    }
+
+    .login-subtitle {
+        color: #6a7e94;
+        font-size: 14px;
+        margin-bottom: 25px;
+    }
+
+    /* Django form */
+
+    .login-form p {
+        margin-bottom: 16px;
+    }
+
+    .login-form label {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        color: #1e3a5f;
+        margin-bottom: 6px;
+    }
+
+    .login-form input {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 15px;
+        border: 1px solid #dce5ef;
+        background: #f9fcff;
+        font-size: 14px;
+        transition: 0.2s;
+    }
+
+    .login-form input:focus {
+        outline: none;
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.12);
+    }
+
+    /* Bouton */
+
+    .login-button {
+        width: 100%;
+        border: none;
+        background: #0d6efd;
+        color: white;
+
+        padding: 13px;
+        border-radius: 16px;
+
+        font-size: 15px;
+        font-weight: 650;
+
+        cursor: pointer;
+        transition: 0.2s;
+
+        margin-top: 5px;
+    }
+
+    .login-button:hover {
+        background: #0b5ed7;
+        transform: translateY(-1px);
+    }
+
+    /* Liens */
+
+    .login-link {
+        text-align: center;
+        margin-top: 18px;
+        font-size: 14px;
+    }
+
+    .login-link a {
+        color: #0d6efd;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .login-link a:hover {
+        text-decoration: underline;
+    }
+
+    .candidature-cta {
+        margin-top: 22px;
+        padding-top: 18px;
+        border-top: 1px solid #edf3f8;
+        text-align: center;
+    }
+
+    .candidature-cta p {
+        color: #6a7e94;
+        font-size: 14px;
+        margin-bottom: 10px;
+    }
+
+    .candidature-button {
+        display: inline-block;
+        width: 100%;
+        text-align: center;
+        text-decoration: none;
+        background: #ffffff;
+        color: #0d6efd;
+        border: 1.5px solid #0d6efd;
+        padding: 12px 16px;
+        border-radius: 16px;
+        font-size: 15px;
+        font-weight: 650;
+        transition: 0.2s;
+    }
+
+    .candidature-button:hover {
+        background: #0d6efd;
+        color: #ffffff;
+        transform: translateY(-1px);
+    }
+
+    /* ================================
+       QUI SOMMES-NOUS
+    ================================= */
+
+    .about-section {
+        background: #ffffff;
+        border-radius: 35px;
+        padding: 45px 40px;
+        text-align: center;
+
+        box-shadow: 0 12px 35px rgba(0, 30, 60, 0.06);
+        margin-bottom: 25px;
+    }
+
+    .section-badge {
+        display: inline-block;
+        background: #e8f3ff;
+        color: #0d6efd;
+
+        padding: 6px 20px;
+        border-radius: 50px;
+
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+
+        margin-bottom: 10px;
+    }
+
+    .section-title {
+        font-size: 30px;
+        font-weight: 750;
+        color: #0b1e33;
+        margin-bottom: 15px;
+    }
+
+    .about-text {
+        max-width: 780px;
+        margin: auto;
+
+        color: #536b83;
+        font-size: 15px;
+        line-height: 1.8;
+    }
+
+    .about-highlight {
+        color: #0d6efd;
+        font-weight: 700;
+    }
+
+    /* ================================
+       NOS SERVICES
+    ================================= */
+
+    .services-section {
+        background: #ffffff;
+        border-radius: 35px;
+        padding: 45px 40px;
+        text-align: center;
+
+        box-shadow: 0 12px 35px rgba(0, 30, 60, 0.06);
+    }
+
+    .services-description {
+        max-width: 750px;
+        margin: 0 auto 30px;
+
+        color: #536b83;
+        font-size: 15px;
+        line-height: 1.7;
+    }
+
+    .services-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 15px;
+    }
+
+    .service-card {
+        background: #f9fcff;
+        border: 1px solid #edf3f8;
+
+        border-radius: 22px;
+        padding: 20px 10px;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+
+        min-height: 120px;
+
+        transition: 0.2s;
+    }
+
+    .service-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(0, 30, 60, 0.07);
+    }
+
+    .service-icon {
+        font-size: 30px;
+        margin-bottom: 8px;
+    }
+
+    .service-name {
+        color: #0b1e33;
+        font-size: 13px;
+        font-weight: 650;
+    }
+
+    .service-ai {
+        background: #eef6fe;
+        border-color: #c7dfff;
+    }
+
+    /* IA badge */
+
+    .ai-badge {
+        display: inline-block;
+
+        margin-top: 25px;
+
+        background: #eef6fe;
+        border: 1px solid #d7eaff;
+
+        color: #1e3a5f;
+
+        padding: 9px 22px;
+        border-radius: 50px;
+
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    /* ================================
+       RESPONSIVE
+    ================================= */
+
+    @media (max-width: 850px) {
+
+        .login-smart-section {
+            grid-template-columns: 1fr;
+        }
+
+        .smartziz-presentation,
+        .login-area {
+            padding: 35px 25px;
+        }
+
+        .services-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (max-width: 500px) {
+
+        .smartziz-page {
+            padding: 15px 10px 40px;
+        }
+
+        .coop-title {
+            font-size: 25px;
+        }
+
+        .smartziz-title {
+            font-size: 30px;
+        }
+
+        .about-section,
+        .services-section {
+            padding: 30px 20px;
+        }
+
+        .services-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+
+
+<div class="smartziz-page">
+
+    <div class="smartziz-container">
+
+        <!-- ==================================
+             COOPÉRATIVE LAITIÈRE ZIZ
+        =================================== -->
+
+        <div class="coop-header">
+
+            <div class="coop-badge">
+                Coopérative Laitière ZIZ
+            </div>
+
+            <h1 class="coop-title">
+                SmartZIZ
+            </h1>
+
+            <p class="coop-subtitle">
+                Gestion intelligente des ressources humaines
+            </p>
+
+        </div>
+
+
+        <!-- ==================================
+             CONNEXION + SMARTZIZ
+        =================================== -->
+
+        <section class="login-smart-section">
+
+
+            <!-- Présentation SmartZIZ -->
+
+            <div class="smartziz-presentation">
+
+                <div class="smartziz-eyebrow">
+                    SMART HR PLATFORM
+                </div>
+
+                <h2 class="smartziz-title">
+                    Bienvenue sur<br>
+                    <span>SmartZIZ</span>
+                </h2>
+
+                <p class="smartziz-description">
+                    ✔ Administration et gestion du personnel<br>
+                    ✔ Espace Responsable RH pour le suivi des ressources humaines<br>
+                    ✔ Espace Employé pour les services et demandes en ligne
+                </p>
+
+                <div class="smart-feature">
+                    <span class="feature-icon">✓</span>
+                    Gestion des employés, contrats et congés
+                </div>
+
+                <div class="smart-feature">
+                    <span class="feature-icon">✓</span>
+                    Assistant RH intelligent basé sur l'IA
+                </div>
+
+                <div class="smart-feature">
+                    <span class="feature-icon">✓</span>
+                    Tableaux de bord, statistiques et rapports automatiques
+                </div>
+
+            </div>
+
+
+            <!-- Formulaire de connexion -->
+
+            <div class="login-area">
+
+                <form method="post"
+                      class="login-form">
+
+                    {% csrf_token %}
+
+                    <h2>
+                        Connexion
+                    </h2>
+
+                    <p class="login-subtitle">
+                        Accédez à votre espace sécurisé SmartZIZ.
+                    </p>
+
+
+                    <!-- Formulaire Django original -->
+
+                    {{ form.as_p }}
+
+
+                    <button
+                        type="submit"
+                        class="login-button">
+
+                        Se connecter
+
+                    </button>
+
+
+                    <p class="login-link">
+
+                        <a href="{% url 'password_reset' %}">
+                            Mot de passe oublié ?
+                        </a>
+
+                    </p>
+
+
+                    <p class="login-link"
+                       style="color:#6a7e94;">
+
+                        Nouveau compte ?
+
+                        <a href="{% url 'register' %}">
+                            Créer un accès
+                        </a>
+
+                    </p>
+
+                </form>
+
+                <div class="candidature-cta">
+                    <p>Vous recherchez une opportunité chez ZIZ ?</p>
+                    <a href="{% url 'candidature_spontanee' %}" class="candidature-button">
+                        Déposer une candidature spontanée
+                    </a>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ==================================
+             QUI SOMMES-NOUS
+        =================================== -->
+
+        <section class="about-section">
+
+            <div class="section-badge">
+                À propos
+            </div>
+
+            <h2 class="section-title">
+                Qui sommes-nous ?
+            </h2>
+
+            <p class="about-text">
+
+                <span class="about-highlight">
+                    SmartZIZ
+                </span>
+                est une plateforme web intelligente dédiée à la
+                digitalisation de la gestion des ressources humaines
+                de la Coopérative Laitière ZIZ.
+
+                <br><br>
+
+                Elle permet de centraliser les informations du personnel
+                et de faciliter la gestion des employés, des congés,
+                des contrats, des formations et des documents
+                administratifs.
+
+                <br><br>
+
+                La plateforme intègre également des fonctionnalités
+                d'intelligence artificielle afin d'améliorer
+                l'accompagnement des utilisateurs et d'automatiser
+                certaines tâches RH.
+
+            </p>
+
+        </section>
+
+
+        <!-- ==================================
+             NOS SERVICES
+        =================================== -->
+
+        <section class="services-section">
+
+            <div class="section-badge">
+                Nos services
+            </div>
+
+            <h2 class="section-title">
+                Des services RH centralisés
+            </h2>
+
+            <p class="services-description">
+
+                Cette section présente les principaux services proposés
+                par <strong>SmartZIZ</strong>, notamment la gestion des
+                employés, des congés, des contrats, des formations et
+                des documents, ainsi que les fonctionnalités
+                d'intelligence artificielle.
+
+            </p>
+
+
+            <div class="services-grid">
+
+
+                <!-- Employés -->
+
+                <div class="service-card">
+
+                    <div class="service-icon">
+                        👥
+                    </div>
+
+                    <div class="service-name">
+                        Employés
+                    </div>
+
+                </div>
+
+
+                <!-- Congés -->
+
+                <div class="service-card">
+
+                    <div class="service-icon">
+                        🗓️
+                    </div>
+
+                    <div class="service-name">
+                        Congés
+                    </div>
+
+                </div>
+
+
+                <!-- Contrats -->
+
+                <div class="service-card">
+
+                    <div class="service-icon">
+                        📄
+                    </div>
+
+                    <div class="service-name">
+                        Contrats
+                    </div>
+
+                </div>
+
+
+                <!-- Formations -->
+
+                <div class="service-card">
+
+                    <div class="service-icon">
+                        📚
+                    </div>
+
+                    <div class="service-name">
+                        Formations
+                    </div>
+
+                </div>
+
+
+                <!-- Documents -->
+
+                <div class="service-card">
+
+                    <div class="service-icon">
+                        📁
+                    </div>
+
+                    <div class="service-name">
+                        Documents
+                    </div>
+
+                </div>
+
+
+                <!-- IA -->
+
+                <div class="service-card service-ai">
+
+                    <div class="service-icon">
+                        🤖
+                    </div>
+
+                    <div class="service-name">
+                        Intelligence Artificielle
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="ai-badge">
+
+                ⚡ Fonctionnalités d'intelligence artificielle intégrées
+
+            </div>
+
+        </section>
+
+    </div>
+
+</div>
+
+{% endblock %}

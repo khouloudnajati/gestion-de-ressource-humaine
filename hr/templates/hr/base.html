@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>{% block title %}RHziz{% endblock %}</title>
+  <script>
+    (function () {
+      var theme = localStorage.getItem("rhziz-theme");
+      if (!theme) {
+        theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      }
+      document.documentElement.setAttribute("data-theme", theme);
+      document.documentElement.setAttribute("data-bs-theme", theme);
+      document.documentElement.style.colorScheme = theme;
+    })();
+  </script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/static/css/app.css?v=3" rel="stylesheet">
+</head>
+<body>
+{% if user.is_authenticated %}
+<nav class="navbar navbar-expand-lg navbar-dark px-3">
+  <a class="navbar-brand fw-bold" href="{% url 'dashboard' %}">RHziz</a>
+  <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#menu"><span class="navbar-toggler-icon"></span></button>
+  <div id="menu" class="collapse navbar-collapse">
+    <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+      <li><a href="{% url 'dashboard' %}">Accueil</a></li>
+      {% if user_is_hr %}
+      <li><a href="{% url 'hr_actions' %}">Actions</a></li>
+      <li><a href="{% url 'employees' %}">Employés</a></li>
+      <li><a href="{% url 'leaves' %}">Congés</a></li>
+      <li><a href="{% url 'planning' %}">Planning</a></li>
+      <li><a href="{% url 'payslips' %}">Paie</a></li>
+      <li><a href="{% url 'trainings' %}">Formations</a></li>
+      <li><a href="{% url 'contracts' %}">Contrats</a></li>
+      <li><a href="{% url 'candidatures_rh' %}">Candidatures spontanées</a></li>
+      <li><a href="{% url 'report' %}">Rapports</a></li>
+      <li><a href="{% url 'ai_training_recommendations' %}">Recommandations IA</a></li>
+      {% if user_is_admin %}
+      <li><a href="{% url 'admin_dashboard' %}">Admin</a></li>
+      <li><a href="{% url 'user_management' %}">Utilisateurs</a></li>
+      {% endif %}
+      {% else %}
+      <li><a href="{% url 'leaves' %}">Congés</a></li>
+      <li><a href="{% url 'planning' %}">Planning</a></li>
+      <li><a href="{% url 'payslips' %}">Paie</a></li>
+      <li><a href="{% url 'trainings' %}">Formations</a></li>
+      <li><a href="{% url 'my_contracts' %}">Contrats</a></li>
+      <li><a href="{% url 'profile' %}">Profil</a></li>
+      {% endif %}
+      <li><a href="{% url 'notifications' %}">Notifications{% if unread_notifications %} <span class="badge status-pending">{{ unread_notifications }}</span>{% endif %}</a></li>
+      <li><a href="{% url 'chatbot' %}">Assistant</a></li>
+      <li class="d-flex align-items-center">
+        <button type="button" class="theme-switch" data-theme-toggle onclick="toggleTheme()" aria-label="Changer le thème">
+          <span class="theme-switch-track">
+            <svg class="theme-switch-icon theme-switch-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+            <svg class="theme-switch-icon theme-switch-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 14.5A8.5 8.5 0 1 1 9.5 3 7 7 0 0 0 21 14.5z"/></svg>
+            <span class="theme-switch-thumb"></span>
+          </span>
+        </button>
+      </li>
+      <li>
+        <form method="post" action="{% url 'logout' %}">
+          {% csrf_token %}
+          <button class="btn btn-sm btn-outline-light">Déconnexion</button>
+        </form>
+      </li>
+    </ul>
+  </div>
+</nav>
+{% else %}
+<button type="button" class="theme-switch theme-switch-floating" data-theme-toggle onclick="toggleTheme()" aria-label="Changer le thème">
+  <span class="theme-switch-track">
+    <svg class="theme-switch-icon theme-switch-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+    <svg class="theme-switch-icon theme-switch-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 14.5A8.5 8.5 0 1 1 9.5 3 7 7 0 0 0 21 14.5z"/></svg>
+    <span class="theme-switch-thumb"></span>
+  </span>
+</button>
+{% endif %}
+<main class="container py-4">
+  {% for message in messages %}
+  <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show">{{ message }}<button class="btn-close" data-bs-dismiss="alert"></button></div>
+  {% endfor %}
+  {% block content %}{% endblock %}
+</main>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/static/js/theme.js?v=3"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

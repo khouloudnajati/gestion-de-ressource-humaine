@@ -1,0 +1,133 @@
+{% extends 'hr/base.html' %}
+{% block title %}Tableau de bord · PeopleFlow{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-2">
+  <div>
+    <p class="eyebrow">{% if is_hr %}ESPACE RESPONSABLE RH{% else %}ESPACE EMPLOYÉ{% endif %}</p>
+    <h1>Bonjour, {{ user.first_name|default:user.username }} 👋</h1>
+    <p class="text-secondary">{% if is_hr %}Pilotez vos ressources humaines et accédez à tous vos services depuis un seul endroit.{% else %}Retrouvez tous vos services personnels au même endroit.{% endif %}</p>
+  </div>
+  {% if is_hr %}
+  <div class="d-flex gap-2 flex-wrap">
+    <a class="btn btn-outline-primary" href="{% url 'hr_actions' %}">Centre d'actions{% if pending or pending_documents %} <span class="badge status-pending">{{ pending|add:pending_documents }}</span>{% endif %}</a>
+    <a class="btn btn-primary" href="{% url 'report' %}">Générer un rapport</a>
+  </div>
+  {% endif %}
+</div>
+
+{% if user_is_admin or is_hr %}
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-4 col-xl-2"><div class="metric"><span>Employés actifs</span><strong>{{ employees }}</strong></div></div>
+  <div class="col-6 col-md-4 col-xl-2"><div class="metric"><span>Départements</span><strong>{{ departments }}</strong></div></div>
+  <div class="col-6 col-md-4 col-xl-2"><div class="metric amber"><span>Congés en attente</span><strong>{{ pending }}</strong></div></div>
+  <div class="col-6 col-md-4 col-xl-2"><div class="metric amber"><span>Documents en attente</span><strong>{{ pending_documents }}</strong></div></div>
+  <div class="col-6 col-md-4 col-xl-2"><div class="metric green"><span>Offres ouvertes</span><strong>{{ open_jobs }}</strong></div></div>
+  <div class="col-6 col-md-4 col-xl-2"><div class="metric"><span>Absents aujourd'hui</span><strong>{{ absences_today|length }}</strong></div></div>
+  <div class="col-6 col-md-4 col-xl-2"><div class="metric amber"><span>À finaliser</span><strong>{{ onboarding_count }}</strong></div></div>
+  <div class="col-6 col-md-4 col-xl-2"><div class="metric amber"><span>Nouvelles candidatures</span><strong>{{ candidatures_nouvelles }}</strong></div></div>
+</div>
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-4 col-xl-2"><div class="metric"><span>Candidatures totales</span><strong>{{ candidatures_total }}</strong></div></div>
+  <div class="col-6 col-md-4 col-xl-2"><div class="metric"><span>En cours d'étude</span><strong>{{ candidatures_en_cours }}</strong></div></div>
+  <div class="col-6 col-md-4 col-xl-2"><div class="metric green"><span>Retenues</span><strong>{{ candidatures_retenues }}</strong></div></div>
+  <div class="col-6 col-md-4 col-xl-2"><div class="metric"><span>Non retenues</span><strong>{{ candidatures_non_retenues }}</strong></div></div>
+</div>
+
+<div class="row g-4 mb-4">
+  <div class="col-md-6 col-lg-4"><section class="panel service-card"><p class="eyebrow">ACTIONS</p><h4>Centre d'actions</h4><p class="text-secondary">Validez congés et documents en un clic.</p><a class="btn btn-primary" href="{% url 'hr_actions' %}">Ouvrir{% if pending or pending_documents %} <span class="badge status-pending">{{ pending|add:pending_documents }}</span>{% endif %}</a></section></div>
+  <div class="col-md-6 col-lg-4"><section class="panel service-card"><p class="eyebrow">PERSONNEL</p><h4>Gestion des employés</h4><p class="text-secondary">Consultez, ajoutez et modifiez les dossiers.</p><a class="btn btn-primary" href="{% url 'employees' %}">Voir</a> <a class="btn btn-outline-primary" href="{% url 'employee_add' %}">Ajouter</a> <a class="btn btn-outline-secondary btn-sm" href="{% url 'employee_export' %}">Export CSV</a></section></div>
+  <div class="col-md-6 col-lg-4"><section class="panel service-card"><p class="eyebrow">ONBOARDING</p><h4>Employés à finaliser</h4><p class="text-secondary">Contrats, documents et paie à compléter pour les nouveaux arrivants.</p><a class="btn btn-primary" href="{% url 'hr_actions' %}">Voir les actions</a>{% if onboarding_count %} <span class="badge status-pending">{{ onboarding_count }}</span>{% endif %}</section></div>
+  <div class="col-md-6 col-lg-4"><section class="panel service-card"><p class="eyebrow">ORGANISATION</p><h4>Départements</h4><p class="text-secondary">Structurez l'entreprise par services.</p><a class="btn btn-primary" href="{% url 'departments' %}">Gérer</a></section></div>
+  <div class="col-md-6 col-lg-4"><section class="panel service-card"><p class="eyebrow">ABSENCES</p><h4>Gestion des congés</h4><p class="text-secondary">Validez ou refusez les demandes.</p><a class="btn btn-primary" href="{% url 'leaves' %}">Traiter</a>{% if pending %} <span class="badge status-pending">{{ pending }}</span>{% endif %}</section></div>
+  <div class="col-md-6 col-lg-4"><section class="panel service-card"><p class="eyebrow">DOCUMENTS</p><h4>Demandes administratives</h4><p class="text-secondary">Attestations et certificats.</p><a class="btn btn-primary" href="{% url 'document_requests' %}">Traiter</a>{% if pending_documents %} <span class="badge status-pending">{{ pending_documents }}</span>{% endif %}</section></div>
+  <div class="col-md-6 col-lg-4"><section class="panel service-card"><p class="eyebrow">COMMUNICATION</p><h4>Annonces RH</h4><p class="text-secondary">Informez tous les employés.</p><a class="btn btn-primary" href="{% url 'announcements' %}">Gérer</a> <span class="badge bg-secondary">{{ active_announcements }} active(s)</span></section></div>
+  <div class="col-md-6 col-lg-4"><section class="panel service-card"><p class="eyebrow">RECRUTEMENT</p><h4>Offres d'emploi</h4><p class="text-secondary">Publiez et suivez les postes ouverts.</p><a class="btn btn-primary" href="{% url 'job_offers' %}">Gérer</a> <span class="badge status-approved">{{ open_jobs }} ouverte(s)</span></section></div>
+  <div class="col-md-6 col-lg-4"><section class="panel service-card"><p class="eyebrow">RECRUTEMENT</p><h4>Candidatures spontanées</h4><p class="text-secondary">Consultez, filtrez et classez les CV reçus par filière.</p><a class="btn btn-primary" href="{% url 'candidatures_rh' %}">Consulter</a>{% if candidatures_nouvelles %} <span class="badge status-pending">{{ candidatures_nouvelles }} nouvelle(s)</span>{% endif %}</section></div>
+  <div class="col-md-6 col-lg-4"><section class="panel service-card"><p class="eyebrow">ANALYSE</p><h4>Rapports RH</h4><p class="text-secondary">Rapports intelligents et export PDF.</p><a class="btn btn-primary" href="{% url 'report' %}">Consulter</a></section></div>
+  <div class="col-md-6 col-lg-4"><section class="panel service-card"><p class="eyebrow">CORPUS IA</p><h4>Documents RH</h4><p class="text-secondary">Base documentaire de l'assistant.</p><a class="btn btn-primary" href="{% url 'documents' %}">Gérer</a></section></div>
+  <div class="col-md-6 col-lg-4"><section class="panel service-card"><p class="eyebrow">ASSISTANCE</p><h4>Assistant intelligent</h4><p class="text-secondary">Questions RH avec IA et documents.</p><a class="btn btn-primary" href="{% url 'chatbot' %}">Ouvrir</a></section></div>
+  <div class="col-md-6 col-lg-4"><section class="panel service-card"><p class="eyebrow">SÉCURITÉ</p><h4>Mon compte</h4><p class="text-secondary">Modifiez votre mot de passe.</p><a class="btn btn-primary" href="{% url 'password_change' %}">Changer</a></section></div>
+  <div class="col-md-6 col-lg-4"><section class="panel service-card"><p class="eyebrow">CONTRATS</p><h4>Contrats de travail</h4><p class="text-secondary">Gérez les contrats du personnel.</p><a class="btn btn-primary" href="{% url 'contracts' %}">Gérer</a></section></div>
+  <div class="col-md-6 col-lg-4"><section class="panel service-card"><p class="eyebrow">FORMATION</p><h4>Formations</h4><p class="text-secondary">Planifiez et suivez les formations.</p><a class="btn btn-primary" href="{% url 'trainings' %}">Gérer</a></section></div>
+  <div class="col-md-6 col-lg-4"><section class="panel service-card"><p class="eyebrow">ÉVALUATION</p><h4>Évaluations</h4><p class="text-secondary">Évaluez les performances du personnel.</p><a class="btn btn-primary" href="{% url 'evaluations' %}">Gérer</a></section></div>
+  <div class="col-md-6 col-lg-4"><section class="panel service-card"><p class="eyebrow">PLANNING</p><h4>Planning des équipes</h4><p class="text-secondary">Organisez les shifts par équipe.</p><a class="btn btn-primary" href="{% url 'planning' %}">Voir</a> <a class="btn btn-outline-primary" href="{% url 'planning_add' %}">Ajouter</a></section></div>
+  <div class="col-md-6 col-lg-4"><section class="panel service-card"><p class="eyebrow">PAIE</p><h4>Fiches de paie</h4><p class="text-secondary">Publiez les bulletins de salaire.</p><a class="btn btn-primary" href="{% url 'payslips' %}">Gérer</a></section></div>
+  <div class="col-md-6 col-lg-4"><section class="panel service-card"><p class="eyebrow">TRAÇABILITÉ</p><h4>Journal des actions</h4><p class="text-secondary">Historique des opérations importantes.</p><a class="btn btn-primary" href="{% url 'audit_logs' %}">Consulter</a></section></div>
+  {% if user_is_admin %}<div class="col-md-6 col-lg-4"><section class="panel service-card"><p class="eyebrow">ADMIN</p><h4>Administration générale</h4><p class="text-secondary">Supervisez les modules du système, les rôles et les activités.</p><a class="btn btn-primary" href="{% url 'admin_dashboard' %}">Administrer</a></section></div>{% endif %}
+</div>
+
+<div class="row g-4 mb-4">
+  <div class="col-lg-4"><section class="panel"><h4>Répartition par département</h4><canvas id="deptChart"></canvas></section></div>
+  <div class="col-lg-4"><section class="panel"><h4>Évolution des congés</h4><canvas id="leaveChart"></canvas></section></div>
+  <div class="col-lg-4"><section class="panel"><h4>Absents aujourd'hui</h4>{% for leave in absences_today %}<div class="list-item"><div><b>{{ leave.employee }}</b><br><small>{{ leave.start_date|date:'d/m/Y' }} — {{ leave.end_date|date:'d/m/Y' }}</small></div></div>{% empty %}<p class="text-secondary mb-0">Personne en congé aujourd'hui.</p>{% endfor %}</section></div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-6"><section class="panel"><h4>Congés en attente</h4>{% for leave in pending_leaves_list %}<div class="list-item"><div><b>{{ leave.employee }}</b><br><small>{{ leave.start_date|date:'d/m/Y' }} — {{ leave.end_date|date:'d/m/Y' }}</small></div><a class="btn btn-sm btn-primary" href="{% url 'hr_actions' %}">Traiter</a></div>{% empty %}<p class="text-secondary mb-0">Aucun congé en attente.</p>{% endfor %}</section></div>
+  <div class="col-lg-6"><section class="panel"><h4>Dernières demandes de documents</h4>{% for req in recent_documents %}<div class="list-item"><div><b>{{ req.employee }}</b> — {{ req.get_doc_type_display }}<br><small>{{ req.created_at|date:'d/m/Y' }}</small></div><span class="badge status-{{ req.status|lower }}">{{ req.get_status_display }}</span></div>{% empty %}<p class="text-secondary mb-0">Aucune demande récente.</p>{% endfor %}</section></div>
+</div>
+{% if candidatures_par_filiere %}
+<section class="panel mt-4">
+  <h4>Candidatures par filière</h4>
+  <div class="row g-2">
+    {% for f in candidatures_par_filiere %}
+    <div class="col-6 col-md-4 col-lg-3">
+      <a class="text-decoration-none" href="{% url 'candidatures_rh' %}?filiere={{ f.pk }}">
+        <div class="metric"><span>{{ f.name }}</span><strong>{{ f.nb }}</strong></div>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if onboarding_actions %}
+<section class="panel mt-4">
+  <h4>Actions de démarrage à traiter</h4>
+  {% for item in onboarding_actions %}
+  <div class="list-item">
+    <div><b>{{ item.employee }}</b><br><small>À compléter : {{ item.missing|join:", " }}</small></div>
+    <a class="btn btn-sm btn-outline-primary" href="{% url 'employee_detail' item.employee.pk %}">Ouvrir le dossier</a>
+  </div>
+  {% endfor %}
+</section>
+{% endif %}
+
+{% else %}
+<div class="row g-3 mb-4">
+  <div class="col-md-3"><div class="metric"><span>Mes demandes</span><strong>{{ employee_total_leaves }}</strong></div></div>
+  <div class="col-md-3"><div class="metric amber"><span>Congés en attente</span><strong>{{ employee_pending_leaves }}</strong></div></div>
+  <div class="col-md-3"><div class="metric green"><span>Congés acceptés</span><strong>{{ employee_approved_leaves }}</strong></div></div>
+  <div class="col-md-3"><div class="metric"><span>Mes documents</span><strong>{{ employee_document_requests }}</strong></div></div>
+</div>
+{% if announcements %}
+<section class="panel mb-4"><p class="eyebrow">ANNONCES RH</p>{% for ann in announcements %}<div class="mb-3 pb-3 border-bottom"><b>{{ ann.title }}</b>{% if ann.priority == 'IMPORTANT' %} <span class="badge status-rejected">Important</span>{% endif %}<p class="text-secondary mb-1 mt-1">{{ ann.content|linebreaksbr }}</p><small class="text-secondary">{{ ann.created_at|date:'d/m/Y' }}</small></div>{% endfor %}</section>
+{% endif %}
+<div class="row g-4">
+  <div class="col-md-6 col-lg-4"><section class="panel"><p class="eyebrow">MON PROFIL</p><h4>Mes informations</h4><p class="text-secondary">Coordonnées et photo.</p><a class="btn btn-primary" href="{% url 'profile' %}">Gérer mon profil</a></section></div>
+  <div class="col-md-6 col-lg-4"><section class="panel"><p class="eyebrow">CONGÉS</p><h4>Mes demandes</h4><p class="text-secondary">Déposer et suivre vos congés.</p><a class="btn btn-primary" href="{% url 'leaves' %}">Voir</a> <a class="btn btn-outline-primary" href="{% url 'leave_create' %}">Nouvelle demande</a></section></div>
+  <div class="col-md-6 col-lg-4"><section class="panel"><p class="eyebrow">DOCUMENTS</p><h4>Documents administratifs</h4><p class="text-secondary">Attestations et certificats.</p><a class="btn btn-primary" href="{% url 'document_requests' %}">Mes documents</a> <a class="btn btn-outline-primary" href="{% url 'document_request_create' %}">Nouvelle demande</a></section></div>
+  <div class="col-md-6 col-lg-4"><section class="panel"><p class="eyebrow">CONTRATS</p><h4>Mes contrats</h4><p class="text-secondary">Consultez vos contrats actifs et leurs dates.</p>{% if employee_contracts %}{% for contract in employee_contracts %}<p class="mb-1"><b>{{ contract.get_contract_type_display }}</b> · {{ contract.start_date|date:'d/m/Y' }}{% if contract.end_date %} → {{ contract.end_date|date:'d/m/Y' }}{% endif %}</p>{% endfor %}{% else %}<p class="text-secondary mb-2">Aucun contrat enregistré pour le moment.</p>{% endif %}<a class="btn btn-outline-primary btn-sm" href="{% url 'my_contracts' %}">Voir mes contrats</a></section></div>
+  <div class="col-md-6 col-lg-4"><section class="panel"><p class="eyebrow">PAIE</p><h4>Ma fiche de paie</h4><p class="text-secondary">Votre bulletin de salaire initial est déjà disponible.</p>{% if employee_latest_payslip %}<p class="mb-1"><b>{{ employee_latest_payslip.month }}/{{ employee_latest_payslip.year }}</b></p><p class="mb-2">Brut : {{ employee_latest_payslip.gross_salary }} € · Net : {{ employee_latest_payslip.net_salary }} €</p>{% else %}<p class="text-secondary mb-2">Aucune fiche de paie disponible.</p>{% endif %}<a class="btn btn-outline-primary btn-sm" href="{% url 'payslips' %}">Voir mes paies</a></section></div>
+  <div class="col-md-6 col-lg-4"><section class="panel"><p class="eyebrow">ASSISTANCE RH</p><h4>Assistant intelligent</h4><p class="text-secondary">Questions sur congés et procédures.</p><a class="btn btn-primary" href="{% url 'chatbot' %}">Ouvrir l'assistant</a></section></div>
+  <div class="col-md-6 col-lg-4"><section class="panel"><p class="eyebrow">SÉCURITÉ</p><h4>Mon compte</h4><p class="text-secondary">Modifier votre mot de passe.</p><a class="btn btn-primary" href="{% url 'password_change' %}">Changer</a></section></div>
+  <div class="col-md-6 col-lg-4"><section class="panel"><p class="eyebrow">PLANNING</p><h4>Mon planning</h4><p class="text-secondary">Consultez vos shifts de la semaine.</p><a class="btn btn-primary" href="{% url 'planning' %}">Voir mon planning</a></section></div>
+  <div class="col-md-6 col-lg-4"><section class="panel"><p class="eyebrow">PAIE</p><h4>Mes fiches de paie</h4><p class="text-secondary">Téléchargez vos bulletins de salaire.</p><a class="btn btn-primary" href="{% url 'payslips' %}">Consulter</a></section></div>
+  <div class="col-md-6 col-lg-4"><section class="panel"><p class="eyebrow">FORMATION</p><h4>Formations</h4><p class="text-secondary">Inscrivez-vous aux sessions disponibles.</p><a class="btn btn-primary" href="{% url 'trainings' %}">Voir les formations</a></section></div>
+  <div class="col-md-6 col-lg-4"><section class="panel"><p class="eyebrow">ÉVALUATION</p><h4>Mes évaluations</h4><p class="text-secondary">Consultez vos notes et retours RH.</p><a class="btn btn-primary" href="{% url 'my_evaluations' %}">Voir</a></section></div>
+  <div class="col-md-6 col-lg-4"><section class="panel"><p class="eyebrow">NOTIFICATIONS</p><h4>Mes alertes</h4><p class="text-secondary">Congés, documents, paie et plus.</p><a class="btn btn-primary" href="{% url 'notifications' %}">Voir{% if unread_notifications %} <span class="badge status-pending">{{ unread_notifications }}</span>{% endif %}</a></section></div>
+  {% if job_offers %}<div class="col-md-6 col-lg-4"><section class="panel"><p class="eyebrow">RECRUTEMENT</p><h4>Offres internes</h4>{% for job in job_offers %}<p class="mb-2"><b>{{ job.title }}</b>{% if job.department %} · {{ job.department }}{% endif %}</p>{% endfor %}<a class="btn btn-outline-primary btn-sm" href="{% url 'job_offers' %}">Voir toutes les offres</a></section></div>{% endif %}
+</div>
+<section class="panel mt-4"><h4>Mes dernières demandes de congé</h4>{% for leave in employee_recent_leaves %}<div class="list-item"><div><b>{{ leave.reason }}</b><br><small>{{ leave.start_date|date:'d/m/Y' }} — {{ leave.end_date|date:'d/m/Y' }}</small></div><span class="badge status-{{ leave.status|lower }}">{{ leave.get_status_display }}</span></div>{% empty %}<p class="text-secondary mb-0">Aucune demande de congé.</p>{% endfor %}</section>
+<section class="panel mt-4"><h4>Mes dernières demandes de documents</h4>{% for req in employee_recent_documents %}<div class="list-item"><div><b>{{ req.get_doc_type_display }}</b><br><small>{{ req.created_at|date:'d/m/Y' }} · {{ req.get_status_display }}</small></div></div>{% empty %}<p class="text-secondary mb-0">Aucune demande de document.</p>{% endfor %}</section>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+{% if is_hr %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+new Chart(document.getElementById('leaveChart'),{type:'line',data:{labels:{{ monthly_labels|safe }},datasets:[{label:'Congés',data:{{ monthly_values|safe }},borderColor:'#476cff',backgroundColor:'#476cff22',fill:true,tension:.35}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}}}});
+{% if dept_labels %}new Chart(document.getElementById('deptChart'),{type:'doughnut',data:{labels:{{ dept_labels|safe }},datasets:[{data:{{ dept_values|safe }},backgroundColor:['#476cff','#20a76c','#d29123','#e85d75','#9b6dff','#38bdf8']}]},options:{plugins:{legend:{position:'bottom'}}}});{% endif %}
+</script>
+{% endif %}
+{% endblock %}

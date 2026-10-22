@@ -1,0 +1,43 @@
+{% extends 'hr/base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-end mb-4">
+  <div>
+    <p class="eyebrow">ÉVALUATION / DETAILS</p>
+    <h1>Évaluation de {{ evaluation.employee }}</h1>
+    <p class="text-secondary">Période : {{ evaluation.period }}</p>
+  </div>
+  <div>
+    {% if user.profile.role == 'HR' or user.is_superuser or user.profile.role == 'ADMIN' %}
+      <a href="{% url 'evaluations' %}" class="btn btn-outline-secondary">← Retour</a>
+      <a href="{% url 'evaluation_edit' evaluation.pk %}" class="btn btn-light">Modifier</a>
+    {% else %}
+      <a href="{% url 'my_evaluations' %}" class="btn btn-outline-secondary">← Retour</a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-md-4">
+    <section class="panel text-center py-4">
+      <h4 class="mb-3">Note globale</h4>
+      <div class="display-3 fw-bold {% if evaluation.score >= 15 %}text-success{% elif evaluation.score >= 10 %}text-warning{% else %}text-danger{% endif %}">
+        {{ evaluation.score }}<span class="fs-4 text-secondary">/20</span>
+      </div>
+      <p class="text-secondary mt-2 mb-0">Évalué par : {{ evaluation.evaluator.first_name }} {{ evaluation.evaluator.last_name|default:evaluation.evaluator.username }}</p>
+      <p class="small text-secondary mt-1">Enregistré le : {{ evaluation.created_at|date:'d/m/Y' }}</p>
+    </section>
+  </div>
+  
+  <div class="col-md-8">
+    <section class="panel mb-4">
+      <h5 class="text-success mb-3">💪 Points forts</h5>
+      <p class="text-secondary" style="white-space: pre-line; font-size: 1.1rem;">{{ evaluation.strengths|default:"Aucun point fort renseigné." }}</p>
+    </section>
+    
+    <section class="panel">
+      <h5 class="text-warning mb-3">📈 Axes d'amélioration</h5>
+      <p class="text-secondary" style="white-space: pre-line; font-size: 1.1rem;">{{ evaluation.improvements|default:"Aucun axe d'amélioration renseigné." }}</p>
+    </section>
+  </div>
+</div>
+{% endblock %}

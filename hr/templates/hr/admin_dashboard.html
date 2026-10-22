@@ -1,0 +1,85 @@
+{% extends 'hr/base.html' %}
+{% block content %}
+<div class="mb-4">
+    <p class="eyebrow">ADMINISTRATION GÉNÉRALE</p>
+    <h1>Administration générale</h1>
+    <p class="text-secondary">Panneau central pour superviser les utilisateurs, les rôles, les opérations RH et l’état global du programme.</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <section class="panel">
+            <h4>Vue d’ensemble</h4>
+            <div class="row g-2 mt-3">
+                <div class="col-6">
+                    <div class="border rounded p-3 text-center">
+                        <div class="fw-bold fs-4">{{ employee_count }}</div>
+                        <small class="text-secondary">Employés</small>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="border rounded p-3 text-center">
+                        <div class="fw-bold fs-4">{{ department_count }}</div>
+                        <small class="text-secondary">Départements</small>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="border rounded p-3 text-center">
+                        <div class="fw-bold fs-4">{{ pending_leaves }}</div>
+                        <small class="text-secondary">Congés en attente</small>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="border rounded p-3 text-center">
+                        <div class="fw-bold fs-4">{{ pending_documents }}</div>
+                        <small class="text-secondary">Documents en attente</small>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="col-lg-8">
+        <section class="panel">
+            <h4>Gestion des rôles</h4>
+            <p class="text-secondary">Accédez aux comptes et attribuez les rôles Administrateur, RH ou Employé.</p>
+            <a class="btn btn-primary" href="{% url 'user_management' %}">Gérer les utilisateurs</a>
+            <a class="btn btn-outline-secondary ms-2" href="{% url 'audit_logs' %}">Voir le journal</a>
+        </section>
+    </div>
+</div>
+
+<div class="row g-4 mt-1">
+    <div class="col-lg-6">
+        <section class="panel">
+            <h4>Modules principaux</h4>
+            <ul class="list-unstyled mt-3 mb-0">
+                <li class="mb-2"><a href="{% url 'employees' %}">● Employés</a></li>
+                <li class="mb-2"><a href="{% url 'departments' %}">● Départements</a></li>
+                <li class="mb-2"><a href="{% url 'contracts' %}">● Contrats</a></li>
+                <li class="mb-2"><a href="{% url 'payslips' %}">● Paie</a></li>
+                <li class="mb-2"><a href="{% url 'trainings' %}">● Formations</a></li>
+                <li class="mb-2"><a href="{% url 'report' %}">● Rapports</a></li>
+            </ul>
+        </section>
+    </div>
+
+    <div class="col-lg-6">
+        <section class="panel">
+            <h4>Activités récentes</h4>
+            {% if recent_logs %}
+                <div class="list-group list-group-flush">
+                    {% for log in recent_logs %}
+                        <div class="list-group-item px-0">
+                            <div class="fw-bold">{{ log.action }}</div>
+                            <small class="text-secondary">{{ log.details|default:'—' }} · {{ log.created_at|date:'d/m/Y H:i' }}</small>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-secondary mb-0">Aucune activité récente.</p>
+            {% endif %}
+        </section>
+    </div>
+</div>
+{% endblock %}

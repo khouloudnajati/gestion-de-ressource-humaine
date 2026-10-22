@@ -1,0 +1,70 @@
+{% extends 'hr/base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-3">
+  <div>
+    <p class="eyebrow" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; color: #6c757d; font-weight: 600; margin-bottom: 4px;">ANALYSE RH</p>
+    <h1 style="font-size: 2rem; font-weight: 700; color: #1a1a2e; margin-bottom: 4px;">Rapport automatisé</h1>
+    <p class="text-secondary" style="color: #6c757d; margin-bottom: 0;">Synthèse des données actuelles de la plateforme.</p>
+  </div>
+  <div class="d-flex gap-2 flex-wrap">
+    {% if not report_obj %}
+    <form method="post" action="{% url 'report_create' %}">{% csrf_token %}
+      <button class="btn" style="background: linear-gradient(135deg, #0d6efd, #0a58ca); border: none; color: white; border-radius: 20px; padding: 8px 24px; font-weight: 500; transition: all 0.2s;">Générer et enregistrer</button>
+    </form>
+    {% endif %}
+    <a class="btn" style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 20px; padding: 8px 24px; color: #495057; text-decoration: none; font-weight: 500; transition: all 0.2s;" href="{% url 'report_pdf' %}">Télécharger le PDF</a>
+  </div>
+</div>
+
+<section class="report-card" style="background: white; border-radius: 16px; padding: 32px; border: 1px solid #e9ecef; box-shadow: 0 4px 12px rgba(0,0,0,0.04);">
+  <div class="report-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #f1f3f5;">
+    <span style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; color: #6c757d; font-weight: 600;">PEOPLEFLOW RH</span>
+    <small style="color: #6c757d; font-size: 0.8rem;">
+      {% if report_obj %}Enregistré le {{report_obj.created_at|date:'d/m/Y H:i'}}{% else %}Aperçu instantané{% endif %}
+    </small>
+  </div>
+  
+  <h3 style="font-weight: 600; color: #1a1a2e; margin-bottom: 12px; font-size: 1.3rem;">Synthèse intelligente</h3>
+  <p class="summary" style="color: #495057; line-height: 1.6; font-size: 0.95rem; background: #f8f9fa; padding: 16px 20px; border-radius: 10px; border-left: 4px solid #0d6efd;">{{summary}}</p>
+  
+  <h5 class="mt-4" style="font-weight: 600; color: #1a1a2e; margin-top: 24px; font-size: 1rem;">Recommandations</h5>
+  <p style="color: #495057; line-height: 1.6; font-size: 0.95rem; background: #f8f9fa; padding: 16px 20px; border-radius: 10px; border-left: 4px solid #28a745;">{{recommendations}}</p>
+  
+  <hr style="margin: 24px 0; border: none; border-top: 1px solid #f1f3f5;">
+  
+  <div class="row text-center" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+    <div style="background: linear-gradient(135deg, #e7f5ff, #d0ebff); border-radius: 12px; padding: 16px;">
+      <strong style="font-size: 1.5rem; display: block; color: #004085;">{{employees}}</strong>
+      <span style="font-size: 0.85rem; color: #004085; opacity: 0.8;">Employés actifs</span>
+    </div>
+    <div style="background: linear-gradient(135deg, #fff3cd, #ffeaa7); border-radius: 12px; padding: 16px;">
+      <strong style="font-size: 1.5rem; display: block; color: #856404;">{{pending}}</strong>
+      <span style="font-size: 0.85rem; color: #856404; opacity: 0.8;">En attente</span>
+    </div>
+    <div style="background: linear-gradient(135deg, #d4edda, #b7e4c7); border-radius: 12px; padding: 16px;">
+      <strong style="font-size: 1.5rem; display: block; color: #155724;">{{approved}}</strong>
+      <span style="font-size: 0.85rem; color: #155724; opacity: 0.8;">Congés acceptés</span>
+    </div>
+  </div>
+  
+  <h5 class="mt-4" style="font-weight: 600; color: #1a1a2e; margin-top: 24px; font-size: 1rem;">Répartition par département</h5>
+  {% for d in distribution %}
+  <div class="d-flex justify-content-between border-bottom py-2" style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f3f5; color: #495057;">
+    <span style="font-size: 0.95rem;">{{d.name}}</span>
+    <b style="color: #1a1a2e; font-size: 0.95rem;">{{d.count}} employé(s)</b>
+  </div>
+  {% endfor %}
+</section>
+
+<section class="panel mt-4" style="background: white; border-radius: 16px; padding: 24px; border: 1px solid #e9ecef; box-shadow: 0 4px 12px rgba(0,0,0,0.04); margin-top: 24px;">
+  <h4 style="font-weight: 600; color: #1a1a2e; margin-bottom: 16px; font-size: 1.1rem;">Historique des rapports</h4>
+  {% for item in history %}
+  <div class="list-item" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid #f1f3f5;">
+    <span style="color: #495057; font-size: 0.95rem;">{{item.title}} · <span style="color: #6c757d; font-size: 0.85rem;">{{item.created_at|date:'d/m/Y H:i'}}</span></span>
+    <a class="btn btn-sm" href="{% url 'report_detail' item.pk %}" style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 20px; padding: 4px 16px; color: #495057; text-decoration: none; font-size: 0.85rem; transition: all 0.2s;">Consulter</a>
+  </div>
+  {% empty %}
+  <p class="text-secondary" style="color: #6c757d; margin-bottom: 0;">Aucun rapport enregistré.</p>
+  {% endfor %}
+</section>
+{% endblock %}

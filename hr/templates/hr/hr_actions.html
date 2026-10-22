@@ -1,0 +1,366 @@
+{% extends 'hr/base.html' %}
+{% block title %}Centre d'actions · RHziz{% endblock %}
+{% block content %}
+<div class="row g-4 mb-4">
+  <div class="col-12">
+    <div class="panel action-hero p-4" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 16px; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+        <div>
+          <p class="eyebrow mb-2" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; color: #6c757d; font-weight: 600;">ESPACE RESPONSABLE RH · RHziz</p>
+          <h1 class="mb-2" style="font-size: 2rem; font-weight: 700; color: #1a1a2e;">Centre d'actions RH</h1>
+          <p class="text-secondary mb-0" style="font-size: 0.95rem;">Priorisez les dossiers urgents avec une vue claire, rapide et organisée.</p>
+        </div>
+        <div class="d-flex gap-2 align-items-center flex-wrap">
+          <span class="badge fs-6" style="background: linear-gradient(135deg, #ff6b6b, #ee5a24); color: white; padding: 8px 16px; border-radius: 20px; font-weight: 500;">{{ total_pending }} tâche(s) à traiter</span>
+          <button class="btn btn-sm" onclick="refreshActions()" style="background: white; border: 1px solid #dee2e6; border-radius: 20px; padding: 8px 16px; transition: all 0.2s;">🔄 Actualiser</button>
+        </div>
+      </div>
+
+      <div class="row g-3 mt-3">
+        <div class="col-6 col-md-3">
+          <div class="metric metric-compact amber" style="background: linear-gradient(135deg, #fff3cd, #ffeaa7); border-radius: 12px; padding: 12px 16px; border: none; box-shadow: 0 2px 8px rgba(255, 193, 7, 0.15);">
+            <span style="font-size: 0.8rem; color: #856404; opacity: 0.8;">Accès à valider</span>
+            <strong style="font-size: 1.5rem; display: block; color: #856404;">{{ pending_access_requests.count }}</strong>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="metric metric-compact" style="background: linear-gradient(135deg, #cce5ff, #b8d4ff); border-radius: 12px; padding: 12px 16px; border: none; box-shadow: 0 2px 8px rgba(13, 110, 253, 0.15);">
+            <span style="font-size: 0.8rem; color: #004085; opacity: 0.8;">Congés</span>
+            <strong style="font-size: 1.5rem; display: block; color: #004085;">{{ pending_leaves.count }}</strong>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="metric metric-compact green" style="background: linear-gradient(135deg, #d4edda, #b7e4c7); border-radius: 12px; padding: 12px 16px; border: none; box-shadow: 0 2px 8px rgba(40, 167, 69, 0.15);">
+            <span style="font-size: 0.8rem; color: #155724; opacity: 0.8;">Documents</span>
+            <strong style="font-size: 1.5rem; display: block; color: #155724;">{{ pending_docs.count }}</strong>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="metric metric-compact" style="background: linear-gradient(135deg, #f8d7da, #f5c6cb); border-radius: 12px; padding: 12px 16px; border: none; box-shadow: 0 2px 8px rgba(220, 53, 69, 0.15);">
+            <span style="font-size: 0.8rem; color: #721c24; opacity: 0.8;">Onboarding</span>
+            <strong style="font-size: 1.5rem; display: block; color: #721c24;">{{ onboarding_items|length }}</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-12">
+    <div class="panel p-3 quick-nav-shell" style="background: white; border-radius: 16px; border: 1px solid #e9ecef; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+      <div class="d-flex gap-2 flex-wrap">
+        <a href="{% url 'leaves' %}" class="btn btn-sm" style="background: #f8f9fa; border: none; border-radius: 20px; padding: 8px 16px; color: #495057; transition: all 0.2s; font-weight: 500;">📅 Congés</a>
+        <a href="{% url 'document_requests' %}" class="btn btn-sm" style="background: #f8f9fa; border: none; border-radius: 20px; padding: 8px 16px; color: #495057; transition: all 0.2s; font-weight: 500;">📄 Documents</a>
+        <a href="{% url 'trainings' %}" class="btn btn-sm" style="background: #f8f9fa; border: none; border-radius: 20px; padding: 8px 16px; color: #495057; transition: all 0.2s; font-weight: 500;">🎓 Formations</a>
+        <a href="{% url 'contracts' %}" class="btn btn-sm" style="background: #f8f9fa; border: none; border-radius: 20px; padding: 8px 16px; color: #495057; transition: all 0.2s; font-weight: 500;">📋 Contrats</a>
+        <a href="{% url 'employees' %}" class="btn btn-sm" style="background: #f8f9fa; border: none; border-radius: 20px; padding: 8px 16px; color: #495057; transition: all 0.2s; font-weight: 500;">👥 Employés</a>
+        <a href="{% url 'announcements' %}" class="btn btn-sm" style="background: #f8f9fa; border: none; border-radius: 20px; padding: 8px 16px; color: #495057; transition: all 0.2s; font-weight: 500;">📢 Annonces</a>
+        <a href="{% url 'report' %}" class="btn btn-sm" style="background: #f8f9fa; border: none; border-radius: 20px; padding: 8px 16px; color: #495057; transition: all 0.2s; font-weight: 500;">📊 Rapports</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-12">
+    <section class="panel" style="background: white; border-radius: 16px; padding: 24px; border: 1px solid #e9ecef; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0" style="font-weight: 600; font-size: 1.1rem; color: #1a1a2e;">Demandes d'accès à valider <span class="badge" style="background: linear-gradient(135deg, #ff6b6b, #ee5a24); color: white; border-radius: 12px; padding: 4px 10px; margin-left: 8px;">{{ pending_access_requests.count }}</span></h4>
+      </div>
+      {% if pending_access_requests %}
+      {% for employee in pending_access_requests %}
+      <div class="list-item" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid #f1f3f5;">
+        <div><b style="color: #1a1a2e;">{{ employee }}</b><br><small style="color: #6c757d;">{{ employee.position }} · {{ employee.department }}</small></div>
+        <div class="d-flex gap-2">
+          <form method="post" action="{% url 'employee_access_decide' employee.pk 'APPROVED' %}">{% csrf_token %}<button class="btn btn-sm" style="background: linear-gradient(135deg, #28a745, #20c997); border: none; color: white; border-radius: 20px; padding: 6px 16px;">Autoriser</button></form>
+          <form method="post" action="{% url 'employee_access_decide' employee.pk 'REJECTED' %}">{% csrf_token %}<button class="btn btn-sm" style="background: transparent; border: 1px solid #dc3545; color: #dc3545; border-radius: 20px; padding: 6px 16px;">Refuser</button></form>
+        </div>
+      </div>
+      {% endfor %}
+      {% else %}
+      <p class="text-secondary mb-0" style="color: #6c757d;">Aucune demande d'accès en attente.</p>
+      {% endif %}
+    </section>
+  </div>
+
+  <div class="col-12">
+    <section class="panel" style="background: white; border-radius: 16px; padding: 24px; border: 1px solid #e9ecef; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0" style="font-weight: 600; font-size: 1.1rem; color: #1a1a2e;">Nouveaux employés à finaliser <span class="badge" style="background: linear-gradient(135deg, #ff6b6b, #ee5a24); color: white; border-radius: 12px; padding: 4px 10px; margin-left: 8px;">{{ onboarding_items|length }}</span></h4>
+      </div>
+      {% if onboarding_items %}
+      {% for item in onboarding_items %}
+      <div class="list-item" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid #f1f3f5;">
+        <div><b style="color: #1a1a2e;">{{ item.employee }}</b><br><small style="color: #6c757d;">À compléter : {{ item.missing|join:", " }}</small></div>
+        <a href="{% url 'employee_detail' item.employee.pk %}" class="btn btn-sm" style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 20px; padding: 6px 16px; color: #495057; text-decoration: none;">Ouvrir le dossier</a>
+      </div>
+      {% endfor %}
+      {% else %}
+      <p class="text-secondary mb-0" style="color: #6c757d;">Aucune action d'onboarding à traiter.</p>
+      {% endif %}
+    </section>
+  </div>
+
+  <div class="col-lg-6">
+    <section class="panel" style="background: white; border-radius: 16px; padding: 24px; border: 1px solid #e9ecef; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0" style="font-weight: 600; font-size: 1.1rem; color: #1a1a2e;">Congés à valider <span class="badge" style="background: linear-gradient(135deg, #ff6b6b, #ee5a24); color: white; border-radius: 12px; padding: 4px 10px; margin-left: 8px;">{{ pending_leaves.count }}</span></h4>
+        <a href="{% url 'leaves' %}" class="btn btn-sm" style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 20px; padding: 6px 16px; color: #495057; text-decoration: none;">Voir tout</a>
+      </div>
+
+      {% if pending_leaves %}
+      <form id="bulk-leaves-form">
+        <div class="d-flex gap-2 mb-3 flex-wrap">
+          <button type="button" class="btn btn-sm" style="background: linear-gradient(135deg, #28a745, #20c997); border: none; color: white; border-radius: 20px; padding: 6px 16px;" data-bs-toggle="modal" data-bs-target="#bulk-approve">Accepter la sélection</button>
+          <button type="button" class="btn btn-sm" style="background: transparent; border: 1px solid #dc3545; color: #dc3545; border-radius: 20px; padding: 6px 16px;" data-bs-toggle="modal" data-bs-target="#bulk-reject">Refuser la sélection</button>
+        </div>
+      {% endif %}
+
+      {% for leave in pending_leaves %}
+      <div class="list-item flex-column align-items-start" style="padding: 14px 0; border-bottom: 1px solid #f1f3f5;">
+        <div class="w-100 d-flex justify-content-between align-items-start">
+          <div class="d-flex gap-2">
+            <input type="checkbox" class="form-check-input mt-1 leave-check" name="leave_ids" value="{{ leave.pk }}" form="bulk-leaves-form" style="border-radius: 4px; border: 2px solid #ced4da;">
+            <div>
+              <b style="color: #1a1a2e;">{{ leave.employee }}</b> — <span class="badge" style="background: #f8f9fa; color: #495057; border-radius: 12px; padding: 4px 10px;">{{ leave.get_leave_type_display }}</span><br>
+              <small style="color: #6c757d;">{{ leave.start_date|date:'d/m/Y' }} — {{ leave.end_date|date:'d/m/Y' }} · {{ leave.days }} jour(s)</small><br>
+              <small class="text-secondary" style="color: #6c757d;">{{ leave.reason|truncatechars:80 }}</small>
+            </div>
+          </div>
+        </div>
+        <div class="d-flex gap-1 mt-2 ms-4">
+          <button class="btn btn-sm" style="background: linear-gradient(135deg, #28a745, #20c997); border: none; color: white; border-radius: 20px; padding: 4px 14px;" data-bs-toggle="modal" data-bs-target="#leave-approve-{{ leave.pk }}">Accepter</button>
+          <button class="btn btn-sm" style="background: transparent; border: 1px solid #dc3545; color: #dc3545; border-radius: 20px; padding: 4px 14px;" data-bs-toggle="modal" data-bs-target="#leave-reject-{{ leave.pk }}">Refuser</button>
+        </div>
+      </div>
+
+      <div class="modal fade" id="leave-approve-{{ leave.pk }}" tabindex="-1">
+        <div class="modal-dialog modal-sm"><div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
+          <form method="post" action="{% url 'leave_decide' leave.pk 'APPROVED' %}">
+            {% csrf_token %}<input type="hidden" name="next" value="{% url 'hr_actions' %}">
+            <div class="modal-header" style="border-bottom: 1px solid #f1f3f5; padding: 16px 24px;"><h5 class="modal-title" style="font-weight: 600; color: #1a1a2e;">Accepter</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body" style="padding: 24px;">
+              <p class="small" style="color: #6c757d;">{{ leave.employee }} — {{ leave.days }} jour(s)</p>
+              <textarea name="comment" class="form-control form-control-sm" rows="2" placeholder="Commentaire (optionnel)" style="border-radius: 10px; border: 1px solid #dee2e6;"></textarea>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid #f1f3f5; padding: 16px 24px;"><button class="btn btn-sm" style="background: linear-gradient(135deg, #28a745, #20c997); border: none; color: white; border-radius: 20px; padding: 6px 20px;">Confirmer</button></div>
+          </form>
+        </div></div>
+      </div>
+      <div class="modal fade" id="leave-reject-{{ leave.pk }}" tabindex="-1">
+        <div class="modal-dialog modal-sm"><div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
+          <form method="post" action="{% url 'leave_decide' leave.pk 'REJECTED' %}">
+            {% csrf_token %}<input type="hidden" name="next" value="{% url 'hr_actions' %}">
+            <div class="modal-header" style="border-bottom: 1px solid #f1f3f5; padding: 16px 24px;"><h5 class="modal-title" style="font-weight: 600; color: #1a1a2e;">Refuser</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body" style="padding: 24px;">
+              <p class="small" style="color: #6c757d;">{{ leave.employee }} — {{ leave.days }} jour(s)</p>
+              <textarea name="comment" class="form-control form-control-sm" rows="2" placeholder="Motif du refus" style="border-radius: 10px; border: 1px solid #dee2e6;"></textarea>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid #f1f3f5; padding: 16px 24px;"><button class="btn btn-sm" style="background: #dc3545; border: none; color: white; border-radius: 20px; padding: 6px 20px;">Confirmer</button></div>
+          </form>
+        </div></div>
+      </div>
+      {% empty %}<p class="text-secondary mb-0" style="color: #6c757d;">Aucun congé en attente.</p>{% endfor %}
+
+      {% if pending_leaves %}
+      <div class="modal fade" id="bulk-approve" tabindex="-1">
+        <div class="modal-dialog"><div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
+          <form method="post" action="{% url 'hr_bulk_leave_decide' 'APPROVED' %}" id="bulk-approve-form">
+            {% csrf_token %}
+            <div class="modal-header" style="border-bottom: 1px solid #f1f3f5; padding: 16px 24px;"><h5 class="modal-title" style="font-weight: 600; color: #1a1a2e;">Accepter en lot</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body" style="padding: 24px;">
+              <p style="color: #495057;">Accepter toutes les demandes cochées. Les employés seront notifiés.</p>
+              <textarea name="comment" class="form-control" rows="2" placeholder="Commentaire commun (optionnel)" style="border-radius: 10px; border: 1px solid #dee2e6;"></textarea>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid #f1f3f5; padding: 16px 24px;"><button class="btn" style="background: linear-gradient(135deg, #28a745, #20c997); border: none; color: white; border-radius: 20px; padding: 6px 24px;">Accepter la sélection</button></div>
+          </form>
+        </div></div>
+      </div>
+      <div class="modal fade" id="bulk-reject" tabindex="-1">
+        <div class="modal-dialog"><div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
+          <form method="post" action="{% url 'hr_bulk_leave_decide' 'REJECTED' %}" id="bulk-reject-form">
+            {% csrf_token %}
+            <div class="modal-header" style="border-bottom: 1px solid #f1f3f5; padding: 16px 24px;"><h5 class="modal-title" style="font-weight: 600; color: #1a1a2e;">Refuser en lot</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body" style="padding: 24px;">
+              <p style="color: #495057;">Refuser toutes les demandes cochées. Les employés seront notifiés.</p>
+              <textarea name="comment" class="form-control" rows="2" placeholder="Motif commun du refus" style="border-radius: 10px; border: 1px solid #dee2e6;"></textarea>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid #f1f3f5; padding: 16px 24px;"><button class="btn" style="background: #dc3545; border: none; color: white; border-radius: 20px; padding: 6px 24px;">Refuser la sélection</button></div>
+          </form>
+        </div></div>
+      </div>
+      {% endif %}
+    </section>
+  </div>
+
+  <div class="col-lg-6">
+    <section class="panel mb-4" style="background: white; border-radius: 16px; padding: 24px; border: 1px solid #e9ecef; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0" style="font-weight: 600; font-size: 1.1rem; color: #1a1a2e;">Documents à traiter <span class="badge" style="background: linear-gradient(135deg, #ff6b6b, #ee5a24); color: white; border-radius: 12px; padding: 4px 10px; margin-left: 8px;">{{ pending_docs.count }}</span></h4>
+        <a href="{% url 'document_requests' %}" class="btn btn-sm" style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 20px; padding: 6px 16px; color: #495057; text-decoration: none;">Voir tout</a>
+      </div>
+
+      {% if pending_docs %}
+      <form id="bulk-docs-form">
+        <div class="d-flex gap-2 mb-3 flex-wrap">
+          <button type="button" class="btn btn-sm" style="background: linear-gradient(135deg, #28a745, #20c997); border: none; color: white; border-radius: 20px; padding: 6px 16px;" data-bs-toggle="modal" data-bs-target="#bulk-doc-ready">Marquer prêts (lot)</button>
+          <button type="button" class="btn btn-sm" style="background: transparent; border: 1px solid #dc3545; color: #dc3545; border-radius: 20px; padding: 6px 16px;" data-bs-toggle="modal" data-bs-target="#bulk-doc-reject">Refuser (lot)</button>
+        </div>
+      {% endif %}
+
+      {% for req in pending_docs %}
+      <div class="list-item flex-column align-items-start" style="padding: 14px 0; border-bottom: 1px solid #f1f3f5;">
+        <div class="w-100 d-flex justify-content-between align-items-start">
+          <div class="d-flex gap-2">
+            <input type="checkbox" class="form-check-input mt-1 doc-check" name="doc_ids" value="{{ req.pk }}" form="bulk-docs-form" style="border-radius: 4px; border: 2px solid #ced4da;">
+            <div>
+              <b style="color: #1a1a2e;">{{ req.employee }}</b> — {{ req.get_doc_type_display }}<br>
+              <small class="text-secondary" style="color: #6c757d;">{{ req.details|default:"Sans précision" }} · {{ req.created_at|date:'d/m/Y' }}</small>
+            </div>
+          </div>
+        </div>
+        <div class="d-flex flex-wrap gap-1 mt-2 ms-4">
+          <button class="btn btn-sm" style="background: linear-gradient(135deg, #28a745, #20c997); border: none; color: white; border-radius: 20px; padding: 4px 14px;" data-bs-toggle="modal" data-bs-target="#doc-ready-{{ req.pk }}">Prêt</button>
+          <button class="btn btn-sm" style="background: linear-gradient(135deg, #0d6efd, #0a58ca); border: none; color: white; border-radius: 20px; padding: 4px 14px;" data-bs-toggle="modal" data-bs-target="#doc-delivered-{{ req.pk }}">Remis</button>
+          <button class="btn btn-sm" style="background: transparent; border: 1px solid #dc3545; color: #dc3545; border-radius: 20px; padding: 4px 14px;" data-bs-toggle="modal" data-bs-target="#doc-reject-{{ req.pk }}">Refuser</button>
+        </div>
+      </div>
+      <div class="modal fade" id="doc-ready-{{ req.pk }}" tabindex="-1">
+        <div class="modal-dialog modal-sm"><div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
+          <form method="post" action="{% url 'document_request_decide' req.pk 'READY' %}">
+            {% csrf_token %}<input type="hidden" name="next" value="{% url 'hr_actions' %}">
+            <div class="modal-header" style="border-bottom: 1px solid #f1f3f5; padding: 16px 24px;"><h5 class="modal-title" style="font-weight: 600; color: #1a1a2e;">Marquer prêt</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body" style="padding: 24px;"><textarea name="comment" class="form-control form-control-sm" rows="2" placeholder="Commentaire" style="border-radius: 10px; border: 1px solid #dee2e6;"></textarea></div>
+            <div class="modal-footer" style="border-top: 1px solid #f1f3f5; padding: 16px 24px;"><button class="btn btn-sm" style="background: linear-gradient(135deg, #28a745, #20c997); border: none; color: white; border-radius: 20px; padding: 6px 20px;">Confirmer</button></div>
+          </form>
+        </div></div>
+      </div>
+      <div class="modal fade" id="doc-delivered-{{ req.pk }}" tabindex="-1">
+        <div class="modal-dialog modal-sm"><div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
+          <form method="post" action="{% url 'document_request_decide' req.pk 'DELIVERED' %}">
+            {% csrf_token %}<input type="hidden" name="next" value="{% url 'hr_actions' %}">
+            <div class="modal-header" style="border-bottom: 1px solid #f1f3f5; padding: 16px 24px;"><h5 class="modal-title" style="font-weight: 600; color: #1a1a2e;">Marquer remis</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body" style="padding: 24px;"><textarea name="comment" class="form-control form-control-sm" rows="2" placeholder="Commentaire" style="border-radius: 10px; border: 1px solid #dee2e6;"></textarea></div>
+            <div class="modal-footer" style="border-top: 1px solid #f1f3f5; padding: 16px 24px;"><button class="btn btn-sm" style="background: linear-gradient(135deg, #0d6efd, #0a58ca); border: none; color: white; border-radius: 20px; padding: 6px 20px;">Confirmer</button></div>
+          </form>
+        </div></div>
+      </div>
+      <div class="modal fade" id="doc-reject-{{ req.pk }}" tabindex="-1">
+        <div class="modal-dialog modal-sm"><div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
+          <form method="post" action="{% url 'document_request_decide' req.pk 'REJECTED' %}">
+            {% csrf_token %}<input type="hidden" name="next" value="{% url 'hr_actions' %}">
+            <div class="modal-header" style="border-bottom: 1px solid #f1f3f5; padding: 16px 24px;"><h5 class="modal-title" style="font-weight: 600; color: #1a1a2e;">Refuser</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body" style="padding: 24px;"><textarea name="comment" class="form-control form-control-sm" rows="2" placeholder="Motif du refus" style="border-radius: 10px; border: 1px solid #dee2e6;"></textarea></div>
+            <div class="modal-footer" style="border-top: 1px solid #f1f3f5; padding: 16px 24px;"><button class="btn btn-sm" style="background: #dc3545; border: none; color: white; border-radius: 20px; padding: 6px 20px;">Confirmer</button></div>
+          </form>
+        </div></div>
+      </div>
+      {% empty %}<p class="text-secondary mb-0" style="color: #6c757d;">Aucune demande de document en attente.</p>{% endfor %}
+
+      {% if pending_docs %}
+      <div class="modal fade" id="bulk-doc-ready" tabindex="-1">
+        <div class="modal-dialog"><div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
+          <form method="post" action="{% url 'hr_bulk_doc_decide' 'READY' %}" id="bulk-doc-ready-form">
+            {% csrf_token %}
+            <div class="modal-header" style="border-bottom: 1px solid #f1f3f5; padding: 16px 24px;"><h5 class="modal-title" style="font-weight: 600; color: #1a1a2e;">Marquer prêts (lot)</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body" style="padding: 24px;">
+              <p style="color: #495057;">Marquer toutes les demandes cochées comme prêtes. Les employés seront notifiés.</p>
+              <textarea name="comment" class="form-control" rows="2" placeholder="Commentaire commun (optionnel)" style="border-radius: 10px; border: 1px solid #dee2e6;"></textarea>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid #f1f3f5; padding: 16px 24px;"><button class="btn" style="background: linear-gradient(135deg, #28a745, #20c997); border: none; color: white; border-radius: 20px; padding: 6px 24px;">Confirmer</button></div>
+          </form>
+        </div></div>
+      </div>
+      <div class="modal fade" id="bulk-doc-reject" tabindex="-1">
+        <div class="modal-dialog"><div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
+          <form method="post" action="{% url 'hr_bulk_doc_decide' 'REJECTED' %}" id="bulk-doc-reject-form">
+            {% csrf_token %}
+            <div class="modal-header" style="border-bottom: 1px solid #f1f3f5; padding: 16px 24px;"><h5 class="modal-title" style="font-weight: 600; color: #1a1a2e;">Refuser (lot)</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body" style="padding: 24px;">
+              <p style="color: #495057;">Refuser toutes les demandes cochées. Les employés seront notifiés.</p>
+              <textarea name="comment" class="form-control" rows="2" placeholder="Motif commun du refus" style="border-radius: 10px; border: 1px solid #dee2e6;"></textarea>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid #f1f3f5; padding: 16px 24px;"><button class="btn" style="background: #dc3545; border: none; color: white; border-radius: 20px; padding: 6px 24px;">Confirmer</button></div>
+          </form>
+        </div></div>
+      </div>
+      {% endif %}
+    </section>
+
+    <section class="panel mb-4" style="background: white; border-radius: 16px; padding: 24px; border: 1px solid #e9ecef; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0" style="font-weight: 600; font-size: 1.1rem; color: #1a1a2e;">Inscriptions formations <span class="badge" style="background: linear-gradient(135deg, #ff6b6b, #ee5a24); color: white; border-radius: 12px; padding: 4px 10px; margin-left: 8px;">{{ recent_enrollments.count }}</span></h4>
+        <a href="{% url 'trainings' %}" class="btn btn-sm" style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 20px; padding: 6px 16px; color: #495057; text-decoration: none;">Formations</a>
+      </div>
+      {% for enroll in recent_enrollments %}
+      <div class="list-item flex-column align-items-start" style="padding: 14px 0; border-bottom: 1px solid #f1f3f5;">
+        <div><b style="color: #1a1a2e;">{{ enroll.employee }}</b> — {{ enroll.training.title }}<br><small class="text-secondary" style="color: #6c757d;">Inscrit le {{ enroll.enrolled_at|date:'d/m/Y' }}</small></div>
+        <div class="d-flex flex-wrap gap-1 mt-2">
+          <form method="post" action="{% url 'training_enrollment_update' enroll.pk 'COMPLETED' %}">{% csrf_token %}<input type="hidden" name="next" value="{% url 'hr_actions' %}"><button class="btn btn-sm" style="background: linear-gradient(135deg, #28a745, #20c997); border: none; color: white; border-radius: 20px; padding: 4px 14px;">Terminé</button></form>
+          <form method="post" action="{% url 'training_enrollment_update' enroll.pk 'CANCELLED' %}">{% csrf_token %}<input type="hidden" name="next" value="{% url 'hr_actions' %}"><button class="btn btn-sm" style="background: transparent; border: 1px solid #dc3545; color: #dc3545; border-radius: 20px; padding: 4px 14px;">Annuler</button></form>
+          <a href="{% url 'training_detail' enroll.training.pk %}" class="btn btn-sm" style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 20px; padding: 4px 14px; color: #495057; text-decoration: none;">Détail</a>
+        </div>
+      </div>
+      {% empty %}<p class="text-secondary mb-0" style="color: #6c757d;">Aucune inscription récente.</p>{% endfor %}
+    </section>
+
+    <section class="panel" style="background: white; border-radius: 16px; padding: 24px; border: 1px solid #e9ecef; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0" style="font-weight: 600; font-size: 1.1rem; color: #1a1a2e;">Contrats à échéance <span class="badge" style="background: linear-gradient(135deg, #ff6b6b, #ee5a24); color: white; border-radius: 12px; padding: 4px 10px; margin-left: 8px;">{{ expiring_contracts.count }}</span></h4>
+        <a href="{% url 'contracts' %}" class="btn btn-sm" style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 20px; padding: 6px 16px; color: #495057; text-decoration: none;">Contrats</a>
+      </div>
+      {% for contract in expiring_contracts %}
+      <div class="list-item" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid #f1f3f5;">
+        <div>
+          <b style="color: #1a1a2e;">{{ contract.employee }}</b> — {{ contract.get_contract_type_display }}<br>
+          <small class="text-secondary" style="color: #6c757d;">Expire le {{ contract.end_date|date:'d/m/Y' }}</small>
+        </div>
+        <a href="{% url 'contract_edit' contract.pk %}" class="btn btn-sm" style="background: linear-gradient(135deg, #0d6efd, #0a58ca); border: none; color: white; border-radius: 20px; padding: 6px 16px; text-decoration: none;">Renouveler</a>
+      </div>
+      {% empty %}<p class="text-secondary mb-0" style="color: #6c757d;">Aucun contrat à échéance proche.</p>{% endfor %}
+    </section>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+function refreshActions(){location.reload()}
+document.getElementById('bulk-approve')?.addEventListener('show.bs.modal', function(){
+  const form = document.getElementById('bulk-approve-form');
+  form.querySelectorAll('input[name="leave_ids"]').forEach(el => el.remove());
+  document.querySelectorAll('.leave-check:checked').forEach(cb => {
+    const inp = document.createElement('input');
+    inp.type = 'hidden'; inp.name = 'leave_ids'; inp.value = cb.value;
+    form.appendChild(inp);
+  });
+});
+document.getElementById('bulk-reject')?.addEventListener('show.bs.modal', function(){
+  const form = document.getElementById('bulk-reject-form');
+  form.querySelectorAll('input[name="leave_ids"]').forEach(el => el.remove());
+  document.querySelectorAll('.leave-check:checked').forEach(cb => {
+    const inp = document.createElement('input');
+    inp.type = 'hidden'; inp.name = 'leave_ids'; inp.value = cb.value;
+    form.appendChild(inp);
+  });
+});
+document.getElementById('bulk-doc-ready')?.addEventListener('show.bs.modal', function(){
+  const form = document.getElementById('bulk-doc-ready-form');
+  form.querySelectorAll('input[name="doc_ids"]').forEach(el => el.remove());
+  document.querySelectorAll('.doc-check:checked').forEach(cb => {
+    const inp = document.createElement('input');
+    inp.type = 'hidden'; inp.name = 'doc_ids'; inp.value = cb.value;
+    form.appendChild(inp);
+  });
+});
+document.getElementById('bulk-doc-reject')?.addEventListener('show.bs.modal', function(){
+  const form = document.getElementById('bulk-doc-reject-form');
+  form.querySelectorAll('input[name="doc_ids"]').forEach(el => el.remove());
+  document.querySelectorAll('.doc-check:checked').forEach(cb => {
+    const inp = document.createElement('input');
+    inp.type = 'hidden'; inp.name = 'doc_ids'; inp.value = cb.value;
+    form.appendChild(inp);
+  });
+});
+</script>
+{% endblock %}

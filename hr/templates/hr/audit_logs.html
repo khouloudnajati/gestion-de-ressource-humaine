@@ -1,0 +1,3 @@
+{% extends 'hr/base.html' %}
+{% block content %}<div class="mb-4"><p class="eyebrow">TRAÇABILITÉ</p><h1>Journal des actions</h1><p class="text-secondary">Historique des actions importantes (cahier des charges §6.8).</p></div>
+<section class="panel">{% for log in logs %}<div class="list-item"><div><b>{{ log.action }}</b><br><small>{{ log.details|default:"—" }} · {{ log.user|default:"Système" }} · {{ log.created_at|date:'d/m/Y H:i' }}</small></div></div>{% empty %}<p class="text-secondary mb-0">Aucune action enregistrée.</p>{% endfor %}</section>{% endblock %}

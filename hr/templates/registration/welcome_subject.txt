@@ -1,0 +1,1 @@
+Bienvenue sur notre plateforme de ziz, {{ first_name }} !

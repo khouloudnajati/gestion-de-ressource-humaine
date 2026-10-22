@@ -1,0 +1,38 @@
+{% extends 'hr/base.html' %}
+{% block title %}Annonces RH · PeopleFlow{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-end mb-4">
+  <div>
+    <p class="eyebrow">COMMUNICATION</p>
+    <h1>Annonces RH</h1>
+    <p class="text-secondary">Publiez des informations visibles par tous les employés.</p>
+  </div>
+</div>
+<div class="row g-4">
+  <div class="col-lg-5">
+    <section class="panel">
+      <h4>Nouvelle annonce</h4>
+      <form method="post">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary">Publier</button></form>
+    </section>
+  </div>
+  <div class="col-lg-7">
+    <section class="panel">
+      <h4>Annonces publiées</h4>
+      {% for ann in announcements %}
+      <div class="list-item flex-column align-items-start">
+        <div class="w-100 d-flex justify-content-between align-items-start">
+          <div>
+            <b>{{ ann.title }}</b>
+            {% if ann.priority == 'IMPORTANT' %}<span class="badge status-rejected ms-1">Important</span>{% endif %}
+            {% if not ann.active %}<span class="badge bg-secondary ms-1">Inactive</span>{% endif %}
+            <p class="text-secondary mb-1 mt-1">{{ ann.content|linebreaksbr }}</p>
+            <small class="text-secondary">{{ ann.created_at|date:'d/m/Y H:i' }}</small>
+          </div>
+          <form method="post" action="{% url 'announcement_delete' ann.pk %}">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">Supprimer</button></form>
+        </div>
+      </div>
+      {% empty %}<p class="text-secondary mb-0">Aucune annonce publiée.</p>{% endfor %}
+    </section>
+  </div>
+</div>
+{% endblock %}

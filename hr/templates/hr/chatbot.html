@@ -1,0 +1,85 @@
+{% extends 'hr/base.html' %}
+{% block title %}Assistant IA · PeopleFlow{% endblock %}
+{% block content %}
+<style>
+.chat-layout{display:grid;grid-template-columns:320px 1fr;gap:24px;align-items:start}.chat-sidebar{background:linear-gradient(135deg,#ffffff 0%,#f8faff 100%);border:1px solid #e3ebff;border-radius:20px;padding:20px;box-shadow:0 10px 24px rgba(16,26,48,.05)}.chat-sidebar .ctx-summary{background:#fff;border:1px solid #e9f0ff;border-radius:14px;padding:12px 14px;margin-top:14px}.quick-links{display:grid;gap:8px}.quick-link{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid #e8eeff;border-radius:12px;background:#fff;color:#24314d;text-decoration:none;transition:all .2s ease}.quick-link:hover{transform:translateY(-1px);border-color:#cfe0ff;text-decoration:none;color:#476cff}.suggestions{display:grid;gap:8px}.suggestions button{border:1px solid #e6ebf8;background:#f7faff;border-radius:999px;padding:9px 12px;text-align:left;font-size:.92rem;color:#24314d}.suggestions button:hover{background:#eef4ff;border-color:#cfe0ff}.chat-window{background:#fff;border:1px solid #e8eeff;border-radius:22px;padding:18px;box-shadow:0 12px 28px rgba(16,26,48,.05)}.messages{display:flex;flex-direction:column;gap:12px;max-height:64vh;overflow:auto;padding-right:6px}.bubble{border-radius:16px;padding:12px 14px;max-width:88%;line-height:1.55;white-space:pre-wrap}.bubble.user{align-self:flex-end;background:linear-gradient(135deg,#476cff 0%,#3557d1 100%);color:#fff}.bubble.bot{align-self:flex-start;background:#f6f8fe;border:1px solid #e8eeff;color:#24314d}.bubble-label{font-size:.74rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#7d96ff;margin-bottom:6px}.chat-input{display:flex;gap:10px;margin-top:14px}.chat-input .form-control{border-radius:999px;border:1px solid #e0e7f4;padding:11px 14px}.chat-input .btn{border-radius:999px;padding:10px 16px}.chat-pill{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:999px;background:#eef4ff;color:#3d5dd6;font-size:.82rem;font-weight:600;margin-bottom:10px}.chip-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}@media (max-width: 992px){.chat-layout{grid-template-columns:1fr}.messages{max-height:50vh}}</style>
+<div class="chat-layout">
+  <aside class="chat-sidebar">
+    <p class="eyebrow">ASSISTANT 100 % IA</p>
+    <h1>SmartZIZ</h1>
+    <p class="text-secondary">Assistant RH entièrement piloté par intelligence artificielle — RAG documentaire, contexte live et LLM.</p>
+
+    <div class="chip-row">
+      <span class="chat-pill">✅ En ligne</span>
+      <span class="chat-pill">🧠 Mode IA pur</span>
+      {% if ai_enabled %}<span class="chat-pill">🤖 LLM connecté</span>{% else %}<span class="chat-pill">⚙️ LLM à configurer</span>{% endif %}
+      {% if rag.active %}<span class="chat-pill">🔍 {{ rag.chunks }} fragments RAG</span>{% endif %}
+    </div>
+
+    {% if ai_enabled %}
+    <div class="alert alert-success py-2 small">🤖 Réponses générées par IA (OpenRouter/OpenAI/Gemini) avec recherche sémantique sur vos documents RH.</div>
+    {% else %}
+    <div class="alert alert-warning py-2 small">⚠️ Ajoutez une clé <code>OPENROUTER_API_KEY</code>, <code>OPENAI_API_KEY</code> ou <code>GEMINI_API_KEY</code> dans <code>.env</code> pour activer le LLM. Le RAG documentaire reste disponible.</div>
+    {% endif %}
+
+    {% if user_ctx.is_hr %}
+    <div class="ctx-summary">
+      <small class="text-secondary d-block mb-1">VUE EMPLOYEUR</small>
+      <span>{{ user_ctx.employees|default:0 }} employés</span> ·
+      <span class="text-warning">{{ user_ctx.pending|default:0 }} congés</span> ·
+      <span class="text-warning">{{ user_ctx.pending_docs|default:0 }} docs</span>
+    </div>
+    {% elif user_ctx.employee %}
+    <div class="ctx-summary">
+      <small class="text-secondary d-block mb-1">MON ESPACE</small>
+      <span>{{ user_ctx.leaves_total|default:0 }} congé(s)</span> ·
+      <span>{{ user_ctx.docs_total|default:0 }} document(s)</span>
+    </div>
+    {% endif %}
+
+    <p class="eyebrow mt-4">SERVICES RAPIDES</p>
+    <div class="quick-links">
+      {% for link in quick_links %}
+      <a href="{{ link.url }}" class="quick-link"><span>{{ link.icon }}</span> {{ link.label }}</a>
+      {% endfor %}
+    </div>
+
+    <p class="eyebrow mt-4">QUESTIONS SUGGÉRÉES</p>
+    <div class="suggestions">
+      {% for s in suggestions %}
+      <button type="button" onclick="fillQuestion('{{ s.question|escapejs }}')">{{ s.label }}</button>
+      {% endfor %}
+    </div>
+  </aside>
+
+  <section class="panel chat-window">
+    <div class="messages" id="messages">
+      {% for item in history %}
+      <div class="bubble user">{{ item.question }}</div>
+      <div class="bubble bot"><div class="bubble-label">SmartZIZ · IA</div>{{ item.answer|linebreaksbr }}</div>
+      {% empty %}
+      <div class="bubble bot">
+        <div class="bubble-label">SmartZIZ · IA</div>
+        Bonjour{% if user_ctx.name %}, {{ user_ctx.name }}{% endif %} ! 👋<br>
+        Je suis SmartZIZ, votre assistant RH <b>100 % IA</b>. J'analyse vos documents, la base live et génère des réponses intelligentes.<br><br>
+        {% if user_ctx.is_hr %}
+        En tant que responsable RH, je peux vous aider sur : employés, départements, congés (accepter/refuser), documents, rapports et procédures internes.
+        {% else %}
+        Je peux vous aider à : déposer un congé, demander un document, modifier votre profil, suivre vos notifications et répondre à vos questions RH.
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    <form method="post" class="chat-input">
+      {% csrf_token %}
+      <input id="question" class="form-control" name="question" placeholder="Écrivez votre question…" required autocomplete="off">
+      <button class="btn btn-primary">Envoyer</button>
+    </form>
+  </section>
+</div>
+<script>
+function fillQuestion(q){document.getElementById('question').value=q;document.getElementById('question').focus()}
+const messagesEl=document.getElementById('messages');
+if(messagesEl){messagesEl.scrollTop=messagesEl.scrollHeight;}
+</script>
+{% endblock %}

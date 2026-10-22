@@ -1,0 +1,46 @@
+{% extends 'hr/base.html' %}
+{% block title %}{% if can_manage %}Recrutement{% else %}Offres d'emploi{% endif %} · PeopleFlow{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-end mb-4">
+  <div>
+    <p class="eyebrow">{% if can_manage %}RECRUTEMENT{% else %}CARRIÈRE{% endif %}</p>
+    <h1>{% if can_manage %}Offres d'emploi{% else %}Offres internes{% endif %}</h1>
+    <p class="text-secondary">{% if can_manage %}Gérez les postes ouverts au sein de l'entreprise.{% else %}Découvrez les opportunités au sein de l'entreprise.{% endif %}</p>
+  </div>
+  {% if can_manage %}<a class="btn btn-primary" href="{% url 'job_offer_add' %}">+ Nouvelle offre</a>{% endif %}
+</div>
+<section class="panel">
+  <p class="mb-3"><span class="badge status-approved">{{ open_count }} offre(s) ouverte(s)</span></p>
+  {% if can_manage %}
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead><tr><th>Poste</th><th>Département</th><th>Statut</th><th>Date limite</th><th></th></tr></thead>
+      <tbody>
+        {% for offer in offers %}
+        <tr>
+          <td><b>{{ offer.title }}</b><br><small class="text-secondary">{{ offer.description|truncatechars:80 }}</small></td>
+          <td>{{ offer.department|default:"—" }}</td>
+          <td><span class="badge {% if offer.status == 'OPEN' %}status-approved{% else %}bg-secondary{% endif %}">{{ offer.get_status_display }}</span></td>
+          <td>{{ offer.deadline|date:'d/m/Y'|default:"—" }}</td>
+          <td class="text-nowrap">
+            <a class="btn btn-sm btn-light" href="{% url 'job_offer_edit' offer.pk %}">Modifier</a>
+            <form method="post" action="{% url 'job_offer_delete' offer.pk %}" class="d-inline">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">Supprimer</button></form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-center text-secondary py-4">Aucune offre d'emploi.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  {% for offer in offers %}
+  <div class="list-item flex-column align-items-start">
+    <div><b>{{ offer.title }}</b>{% if offer.department %} · {{ offer.department }}{% endif %}{% if offer.deadline %}<br><small>Date limite : {{ offer.deadline|date:'d/m/Y' }}</small>{% endif %}</div>
+    <p class="text-secondary mb-1">{{ offer.description|linebreaksbr }}</p>
+    {% if offer.requirements %}<p class="mb-0"><small><b>Profil :</b> {{ offer.requirements }}</small></p>{% endif %}
+  </div>
+  {% empty %}<p class="text-secondary mb-0">Aucune offre ouverte pour le moment.</p>{% endfor %}
+  {% endif %}
+</section>
+{% endblock %}

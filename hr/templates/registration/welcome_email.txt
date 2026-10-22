@@ -1,0 +1,9 @@
+Bonjour {{ first_name }},
+
+Bienvenue sur notre plateforme de ziz !
+Votre compte a été créé avec succès.
+
+Vous pouvez désormais vous connecter à votre espace et accéder à tous nos services.
+
+Cordialement,
+L'équipe de la plateforme.

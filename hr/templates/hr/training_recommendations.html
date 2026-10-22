@@ -1,0 +1,350 @@
+{% extends 'hr/base.html' %}
+{% block title %}Recommandations IA · PeopleFlow{% endblock %}
+{% block content %}
+<style>
+  .rec-container {
+    animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Header Banner */
+  .rec-header {
+    background: linear-gradient(135deg, #1e1b4b 0%, #311042 50%, #1e1b4b 100%);
+    border-radius: 24px;
+    padding: 40px;
+    margin-bottom: 30px;
+    color: #ffffff;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    position: relative;
+    overflow: hidden;
+  }
+  .rec-header::after {
+    content: "🎓";
+    position: absolute;
+    right: 40px;
+    bottom: -15px;
+    font-size: 8rem;
+    opacity: 0.08;
+    pointer-events: none;
+  }
+
+  /* Search Bar styling */
+  .search-wrapper {
+    position: relative;
+    margin-bottom: 30px;
+  }
+  .search-input {
+    width: 100%;
+    padding: 14px 20px 14px 50px;
+    font-size: 1.05rem;
+    border-radius: 16px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: 0 8px 24px var(--shadow);
+    transition: all 0.3s ease;
+  }
+  .search-input:focus {
+    outline: none;
+    border-color: var(--blue);
+    box-shadow: 0 8px 30px rgba(71, 108, 255, 0.15);
+  }
+  .search-icon {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 1.2rem;
+    pointer-events: none;
+  }
+
+  /* Premium Table styling */
+  .table-panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 10px 30px var(--shadow);
+    overflow: hidden;
+  }
+
+  .premium-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 12px;
+    margin-top: -12px;
+  }
+  .premium-table th {
+    color: var(--muted);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    padding: 12px 18px;
+    border: none;
+  }
+  .premium-table tbody tr {
+    background: var(--surface-alt);
+    transition: all 0.25s ease;
+  }
+  .premium-table tbody tr:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px var(--shadow);
+    background: var(--surface);
+  }
+  .premium-table td {
+    padding: 18px;
+    vertical-align: middle;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .premium-table td:first-child {
+    border-left: 1px solid var(--line);
+    border-top-left-radius: 14px;
+    border-bottom-left-radius: 14px;
+  }
+  .premium-table td:last-child {
+    border-right: 1px solid var(--line);
+    border-top-right-radius: 14px;
+    border-bottom-right-radius: 14px;
+  }
+
+  /* Avatar / Initials */
+  .avatar-circle {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(71, 108, 255, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
+    color: var(--blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    border: 1px solid rgba(71, 108, 255, 0.15);
+  }
+  [data-theme="dark"] .avatar-circle {
+    color: #8ba4ff;
+    border-color: rgba(123, 155, 255, 0.25);
+  }
+
+  /* Skills tags */
+  .skill-tag {
+    display: inline-block;
+    padding: 4px 10px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    color: var(--muted);
+    border-radius: 8px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    margin: 2px;
+  }
+
+  /* Recommendation Card Inside Table */
+  .rec-inline-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 0.85rem;
+    max-width: 480px;
+    box-shadow: 0 2px 8px var(--shadow);
+  }
+  .rec-inline-title {
+    font-weight: 700;
+    color: var(--blue);
+  }
+  [data-theme="dark"] .rec-inline-title {
+    color: #8ba4ff;
+  }
+  
+  /* Badges */
+  .p-badge {
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 2px 6px;
+    border-radius: 6px;
+    display: inline-block;
+  }
+  .p-high { background: #ffe2e4; color: #b42335; }
+  .p-medium { background: #fff1d6; color: #9b6400; }
+  .p-low { background: #e8f0ff; color: #2b4db8; }
+  [data-theme="dark"] .p-high { background: #3d1a20; color: #ff8a96; }
+  [data-theme="dark"] .p-medium { background: #3d3018; color: #f0c060; }
+  [data-theme="dark"] .p-low { background: #1a2848; color: #8ba4ff; }
+
+  /* Premium Buttons */
+  .action-btn {
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+  .btn-recommend {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(71, 108, 255, 0.15);
+  }
+  .btn-recommend:hover:not(:disabled) {
+    background: #365ae6;
+    border-color: #365ae6;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(71, 108, 255, 0.25);
+  }
+  .btn-success-pill {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #ffffff;
+    border: none;
+    cursor: default;
+    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.15);
+  }
+
+  .spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+    border-width: 0.15em;
+  }
+</style>
+
+<div class="rec-container">
+  <!-- Header Banner -->
+  <div class="rec-header">
+    <p class="eyebrow text-white-50">INTELLIGENCE ARTIFICIELLE</p>
+    <h1 class="text-white">Recommandations de Formations</h1>
+    <p class="lead mb-0 text-white-50">Sélectionnez un collaborateur pour lui recommander une formation adaptée en fonction de ses compétences, de son poste ou de son département, et l'y inscrire automatiquement.</p>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="search-wrapper">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="employeeSearch" class="search-input" placeholder="Rechercher un collaborateur par son nom ou son poste..." onkeyup="filterEmployees()">
+  </div>
+
+  <!-- Table Container -->
+  <div class="table-panel">
+    <div class="table-responsive">
+      <table class="premium-table">
+        <thead>
+          <tr>
+            <th>Collaborateur</th>
+            <th>Formation IA & Justification</th>
+            <th>Statut</th>
+            <th class="text-end">Action</th>
+          </tr>
+        </thead>
+        <tbody id="employeeTableBody">
+          {% for item in employees_data %}
+          <tr class="employee-row" data-name="{{ item.employee.first_name }} {{ item.employee.last_name }}" data-position="{{ item.employee.position }}">
+            <!-- Collaborateur Column -->
+            <td>
+              <div class="d-flex align-items-center gap-3">
+                <div class="avatar-circle">
+                  {{ item.employee.first_name|slice:":1" }}{{ item.employee.last_name|slice:":1" }}
+                </div>
+                <div>
+                  <div class="fw-bold text-dark-emphasis">{{ item.employee.first_name }} {{ item.employee.last_name }}</div>
+                  <small class="text-secondary">{{ item.employee.position }} · <b>{{ item.employee.department.name }}</b></small>
+                </div>
+              </div>
+            </td>
+
+
+
+            <!-- Recommandation IA Column -->
+            <td>
+              {% if item.recommendation %}
+                <div class="rec-inline-card">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="rec-inline-title">{{ item.recommendation.recommended_training_title }}</span>
+                    {% if item.recommendation.priority == "HIGH" %}
+                      <span class="p-badge p-high">Élevée</span>
+                    {% elif item.recommendation.priority == "MEDIUM" %}
+                      <span class="p-badge p-medium">Moyenne</span>
+                    {% else %}
+                      <span class="p-badge p-low">Faible</span>
+                    {% endif %}
+                  </div>
+                  <p class="text-secondary small mb-1">{{ item.recommendation.recommended_training_description }}</p>
+                  <small class="d-block text-muted" style="border-top: 1px solid var(--line); padding-top: 4px; margin-top: 4px;">
+                    💡 <b>Justification IA :</b> {{ item.recommendation.rationale }}
+                  </small>
+                </div>
+              {% else %}
+                <span class="text-muted small"><em>Aucune recommandation générée</em></span>
+              {% endif %}
+            </td>
+
+            <!-- Statut Column -->
+            <td>
+              {% if item.recommendation and item.recommendation.converted_to_training %}
+                <span class="badge bg-success-subtle text-success border px-2.5 py-1.5 fw-bold" style="font-size: 0.72rem;">✓ Inscrit d'office</span>
+              {% else %}
+                <span class="badge bg-secondary-subtle text-secondary border px-2.5 py-1.5 fw-bold" style="font-size: 0.72rem;">Non inscrit</span>
+              {% endif %}
+            </td>
+
+            <!-- Action Column -->
+            <td class="text-end">
+              <form method="post" action="{% url 'generate_ai_recommendation' item.employee.id %}">
+                {% csrf_token %}
+                {% if item.recommendation and item.recommendation.converted_to_training %}
+                  <button type="submit" class="btn action-btn btn-outline-secondary btn-sm" onclick="triggerLoading(this)">
+                    🔄 Réinscrire / Ajuster
+                  </button>
+                {% else %}
+                  <button type="submit" class="btn action-btn btn-recommend btn-sm" onclick="triggerLoading(this)">
+                    🧠 Recommander & Inscrire
+                  </button>
+                {% endif %}
+              </form>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4" class="text-center py-5">
+              <h5 class="text-secondary">Aucun collaborateur disponible.</h5>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Dynamic JavaScript client-side filtering for immediate feedback
+  function filterEmployees() {
+    const query = document.getElementById('employeeSearch').value.toLowerCase();
+    const rows = document.querySelectorAll('.employee-row');
+    
+    rows.forEach(row => {
+      const name = row.getAttribute('data-name').toLowerCase();
+      const pos = row.getAttribute('data-position').toLowerCase();
+      if (name.includes(query) || pos.includes(query)) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  }
+
+  // Button spinner on form submit
+  function triggerLoading(button) {
+    button.disabled = true;
+    button.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> IA active...';
+    button.closest('form').submit();
+  }
+</script>
+{% endblock %}
